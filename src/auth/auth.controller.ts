@@ -4,12 +4,12 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
+import { Repository } from 'typeorm';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
     constructor(
-        @InjectRepository(User)
         private readonly authService:AuthService
     ) {};
 
