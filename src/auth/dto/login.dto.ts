@@ -8,7 +8,7 @@ export class LoginDto {
     @IsOptional()
     email?:string
 
-    @ApiProperty({ example : "test", description : "유저네임 (로그인시 이메일 또는 유저네임 사용 가능)"})
+    @ApiProperty({ example : "test", description : "유저네임 (로그인시 이메일 또는 유저네임 사용 가능, 둘다 입력시 이메일 우선)"})
     @IsString()
     @IsOptional()
     username?:string

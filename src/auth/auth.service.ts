@@ -11,17 +11,17 @@ import { JwtService } from '@nestjs/jwt';
 export class AuthService {
     constructor(
         @InjectRepository(User)
-        private readonly UserRepository : Repository<User>,
+        private readonly userRepository : Repository<User>,
         private readonly jwtService : JwtService
     ){}
-    async register(RegisterDto : RegisterDto): Promise<{success:boolean}> {
-        const { email , username , password } = RegisterDto
+    async register(registerDto : RegisterDto): Promise<{success:boolean}> {
+        const { email , username , password } = registerDto
 
-        if (!await this.isEmailTaken(email)) {
+        if (await this.isEmailTaken(email)) {
             throw new BadRequestException("이메일 중복");
         }
 
-        if (!await this.isUsernameTaken(username)) {
+        if (await this.isUsernameTaken(username)) {
             throw new BadRequestException("유저네임 중복");
         }
 
@@ -29,15 +29,14 @@ export class AuthService {
 
             const hashedPassword = await bcrypt.hash(password,10)
 
-            await this.UserRepository.save
-            ({
-                email:email,
-                username:username,
-                password:hashedPassword
+            await this.userRepository.save({
+                email,
+                username,
+                hashedPassword
             });
 
             return {
-                "success":true
+                success:true
             };
 
         } catch(err) {
@@ -50,30 +49,29 @@ export class AuthService {
 
     async isEmailTaken(email : string): Promise<boolean> {
         try {
-            const res = await this.UserRepository.findOne({
+            const res = await this.userRepository.findOne({
                  where : { email : email }
                 });
-
-            return !res;
+            return !!res;
         } catch (err) {
             console.log(err);
-            return false;
+            return false
         }
     }
 
     async isUsernameTaken(username : string): Promise<boolean> {
         try {
-            const res = await this.UserRepository.findOne({
+            const res = await this.userRepository.findOne({
                  where : { username : username }});
-            return !res;
+            return !!res;
         } catch (err) {
             console.log(err);
             return false;
         }
     }
 
-    async login(LoginDto : LoginDto): Promise<{success:boolean , accessToken:string}> {
-        const {email,username,password} = LoginDto;
+    async login(loginDto : LoginDto): Promise<{success:boolean , accessToken:string}> {
+        const {email,username,password} = loginDto;
 
         if (!email && !username) {
             throw new BadRequestException("이메일또는 유저네임 중 하나는 필수입니다.");
@@ -86,23 +84,32 @@ export class AuthService {
         let user;
 
         if(email) {
-            user = await this.UserRepository.findOne({ where : {email:email}})
+            user = await this.userRepository.findOne({ where : {email:email}})
         } else {
-            user = await this.UserRepository.findOne({ where : {username:username}})
+            user = await this.userRepository.findOne({ where : {username:username}})
         }
 
-        if(!user) throw new UnauthorizedException("해당 유저가 존재하지 않습니다.");
+        if(!user) throw new UnauthorizedException("로그인 정보가 올바르지 않습니다.");
 
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
         if(!isPasswordCorrect) {
-            throw new UnauthorizedException("비밀번호가 틀렸습니다.");
+            throw new UnauthorizedException("로그인 정보가 올바르지 않습니다.");
+        }
+
+        const payload = {
+            userId:user.user_id,
+            email:user.email,
+            username:user.username
         }
         
-        const token = this.jwtService.sign({email,username})
+        const token = this.jwtService.sign(payload)
 
         return {
-            "success":true,
-            "accessToken":token
+            success:true,
+            accessToken:token
         }
     }
 }
+
+
+    
