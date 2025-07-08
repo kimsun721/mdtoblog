@@ -17,11 +17,11 @@ export class AuthService {
     async register(registerDto : RegisterDto): Promise<{success:boolean}> {
         const { email , username , password } = registerDto
 
-        if (await this.isEmailTaken(email)) {
+        if (await this.isFieldTaken('email',email)) {
             throw new BadRequestException("이메일 중복");
         }
 
-        if (await this.isUsernameTaken(username)) {
+        if (await this.isFieldTaken('username',username)) {
             throw new BadRequestException("유저네임 중복");
         }
 
@@ -47,22 +47,10 @@ export class AuthService {
         
     }
 
-    async isEmailTaken(email : string): Promise<boolean> {
+    async isFieldTaken(field: keyof User,value: string) {
         try {
             const res = await this.userRepository.findOne({
-                 where : { email : email }
-                });
-            return !!res;
-        } catch (err) {
-            console.log(err);
-            return false
-        }
-    }
-
-    async isUsernameTaken(username : string): Promise<boolean> {
-        try {
-            const res = await this.userRepository.findOne({
-                 where : { username : username }});
+                 where : { [field] : value }});
             return !!res;
         } catch (err) {
             console.log(err);
@@ -112,4 +100,3 @@ export class AuthService {
 }
 
 
-    
