@@ -61,13 +61,10 @@ export class AuthService {
     async login(loginDto : LoginDto): Promise<{success:boolean , accessToken:string}> {
         const {email,username,password} = loginDto;
 
-        if (!email && !username) {
-            throw new BadRequestException("이메일또는 유저네임 중 하나는 필수입니다.");
-        }
+        if (!email && !username) throw new BadRequestException("이메일또는 유저네임 중 하나는 필수입니다.");
 
-        if (!password) {
-            throw new BadRequestException("비밀번호는 필수입니다.");
-        }
+        if (!password) throw new BadRequestException("비밀번호는 필수입니다.");
+        
 
         let user;
 
