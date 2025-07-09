@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
-import { AuthController } from './auth/auth.controller';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
+import { JwtStrategy } from './auth/strategy/jwt.strategy';
+import { GoogleStrategy } from './auth/strategy/google.strategy';
 
 @Module({
   imports: [
@@ -35,6 +35,6 @@ import { UserModule } from './user/user.module';
     UserModule
   ],
   controllers: [],
-  providers: [ConfigService],
+  providers: [ConfigService,JwtStrategy,GoogleStrategy],
 })
 export class AppModule {}

@@ -11,6 +11,6 @@ export class User {
     @Column({unique:true,length:500})
     username:string
     
-    @Column({})
-    password:string
+    @Column({type:"varchar",nullable:true})
+    password:string | null
 }

@@ -16,7 +16,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
             inject: [ConfigService],
             useFactory: (configService : ConfigService)=> ({
                 secret: configService.get<string>('JWTKEY'),
-                signOptions: {expiresIn:'1h'} // 1시간뒤 토큰 만료
+                signOptions: {expiresIn:'231786d'} // 1시간뒤 토큰 만료
             })
         })
     ],
