@@ -7,4 +7,6 @@ export default () => ({
     DB_DATABASE: process.env.DB_DATABASE,
     // MONGO_URL: process.env.MONGO_URL,
     JWTKEY: process.env.JWTKEY,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET
   });
