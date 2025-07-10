@@ -28,13 +28,7 @@ export class AuthController {
         const res = await this.authService.login(body);
 
         return res;
-    }
-
-    @UseGuards(AuthGuard('google'))
-    @Get('google')
-    async googleAuth(@Req() req) {
-
-    }
+    }   
 
     @UseGuards(AuthGuard('google'))
     @Get('google/redirect')
