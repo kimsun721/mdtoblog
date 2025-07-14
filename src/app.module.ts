@@ -4,7 +4,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { JwtStrategy } from './auth/strategy/jwt.strategy';
-import { GoogleStrategy } from './auth/strategy/google.strategy';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { GithubStrategy } from './auth/strategy/github.strategy';
@@ -41,7 +40,6 @@ import { GithubStrategy } from './auth/strategy/github.strategy';
   providers: [
     ConfigService,
     JwtStrategy,
-    GoogleStrategy,
     GithubStrategy,
     // {
     //   provide:APP_GUARD,
