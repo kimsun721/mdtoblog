@@ -35,4 +35,16 @@ export class AuthController {
     async googleAuthRedirect(@Req() req) {
         return await this.authService.oauthLogin(req.user.email,req.user.name);
     }
+
+    @UseGuards(AuthGuard('github'))
+    @Get('github')
+    async githubLogin() {}
+
+    @UseGuards(AuthGuard('github'))
+    @Get('github/redirect')
+    async githubRedirect(@Req() req) {
+        console.log(req.user.githubAccessToken);
+        return this.authService.oauthLogin(req.user.email,req.user.username);
+    }
+
 }

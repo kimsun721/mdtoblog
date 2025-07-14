@@ -8,5 +8,7 @@ export default () => ({
     // MONGO_URL: process.env.MONGO_URL,
     JWTKEY: process.env.JWTKEY,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
+    GITHUB_CLIENT_SECRET: process.env.GIHUB_CLIENT_SECRET
   });

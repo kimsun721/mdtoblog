@@ -7,6 +7,7 @@ import { JwtStrategy } from './auth/strategy/jwt.strategy';
 import { GoogleStrategy } from './auth/strategy/google.strategy';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
+import { GithubStrategy } from './auth/strategy/github.strategy';
 
 @Module({
   imports: [
@@ -41,10 +42,11 @@ import { AuthGuard } from '@nestjs/passport';
     ConfigService,
     JwtStrategy,
     GoogleStrategy,
-    {
-      provide:APP_GUARD,
-      useClass: AuthGuard('jwt')
-    }
+    GithubStrategy,
+    // {
+    //   provide:APP_GUARD,
+    //   useClass: AuthGuard('jwt')
+    // }
   ],
 })
 export class AppModule {}

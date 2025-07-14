@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 // TODO 
 // - 로그인,구글 로그인 코드부분 좀 더 함수로 묶고 해서 최적화하기
 // - 구글 로그인 코드 괄호가 너무 많음 + 변수명 대충지음  
+// - dto 안쓴부분 고치기
 
 @Injectable()
 export class AuthService {
