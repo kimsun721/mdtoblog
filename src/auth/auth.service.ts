@@ -1,8 +1,9 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
-import { User } from './entities/user.entity';
+import { User } from '../entities/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
+import axios from 'axios';
 
 // TODO 
 // - 로그인,구글 로그인 코드부분 좀 더 함수로 묶고 해서 최적화하기
@@ -21,15 +22,13 @@ export class AuthService {
         const res = await this.userRepository.findOne({ where : { email:email}})
         if(!res) {
             try {
-                const password = null
 
                 const rres = await this.userRepository.save({
                     email,
-                    username,
-                    password
+                    username
                 });
 
-                const userId = rres.user_id
+                const userId = rres.id
 
                 const payload = {
                     userId,
@@ -44,7 +43,7 @@ export class AuthService {
                     accessToken:token
                 }
             } catch(err) {
-                console.log(err)
+                console.log(err.message)
                 throw new BadRequestException();
             }
         } else {
@@ -54,7 +53,7 @@ export class AuthService {
                 }
             })
 
-            const userId = rres?.user_id
+            const userId = rres?.id
 
             const payload = {
                 userId,

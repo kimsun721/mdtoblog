@@ -18,7 +18,6 @@ export class AuthController {
     @ApiOperation({summary:'github 로그인',description:'github oauth 로그인'})
     async githubRedirect(@Req() req) {
         console.log(req.user.githubAccessToken);
-        return this.authService.oauthLogin(req.user.email,req.user.username);
+        await this.authService.oauthLogin(req.user.email,req.user.username);
     }
-
 }

@@ -7,6 +7,7 @@ import { JwtStrategy } from './auth/strategy/jwt.strategy';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { GithubStrategy } from './auth/strategy/github.strategy';
+import { RepoModule } from './repo/repo.module';
 
 @Module({
   imports: [
@@ -34,7 +35,8 @@ import { GithubStrategy } from './auth/strategy/github.strategy';
     // }),
     //AppModule,
     AuthModule,
-    UserModule
+    UserModule,
+    RepoModule
   ],
   controllers: [],
   providers: [
