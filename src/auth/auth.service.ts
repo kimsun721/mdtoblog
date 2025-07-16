@@ -1,17 +1,18 @@
-import * as bcrypt from 'bcrypt';
+import * as CryptoJS from "crypto-js";
 import { InjectRepository } from '@nestjs/typeorm';
-import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { User } from '../entities/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import axios from 'axios';
 import { AuthResponseDto } from 'src/dto/ResponseDto/AuthResponseDto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
     constructor(
         @InjectRepository(User)
         private readonly userRepository : Repository<User>,
+        private readonly configService : ConfigService,
         private readonly jwtService : JwtService
     ){}
 
@@ -23,7 +24,11 @@ export class AuthService {
 
         if(user) {
             userId = user.id
-            await this.userSave(email,username,accessToken)
+            try {
+                res = await this.userSave(email,username,accessToken);
+            } catch (e) {
+                throw new InternalServerErrorException('USER_SAVE_ERROR');
+            }
         } else {
             try {
                 res = await this.userSave(email,username,accessToken);
@@ -47,15 +52,23 @@ export class AuthService {
         }  
     }
     async userSave(email : string, username : string, accessToken : string) {
+
+        const secretKey = await this.configService.get<string>('CRYPTO_SECRET');
+
+        const encryptedToken = CryptoJS.AES.encrypt(accessToken, secretKey).toString();
         
-        const hashedAccessToken = await bcrypt.hash(accessToken,10)
-        console.log(hashedAccessToken)
-        
-        const result = await this.userRepository.save({
+        const result = await this.userRepository.save({ 
             email,
             username,
-            access_token:hashedAccessToken
+            access_token:encryptedToken
         });
+
+        const bytes = CryptoJS.AES.decrypt(encryptedToken, secretKey)
+        const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+        console.log(accessToken)  
+        console.log(result)
+        console.log(decrypted)
+        console.log(bytes)
 
         return result;
     }
