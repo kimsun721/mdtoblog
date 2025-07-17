@@ -62,14 +62,7 @@ export class AuthService {
             username,
             access_token:encryptedToken
         });
-
-        const bytes = CryptoJS.AES.decrypt(encryptedToken, secretKey)
-        const decrypted = bytes.toString(CryptoJS.enc.Utf8);
-        console.log(accessToken)  
-        console.log(result)
-        console.log(decrypted)
-        console.log(bytes)
-
+        
         return result;
     }
 }
