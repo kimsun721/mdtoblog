@@ -20,6 +20,10 @@ export class RepoController {
   @Post()
   async createRepo(@Req() req,@Body() body:CreateRepoDto) {
     const { userId,username } = req.user.profile
-    return await this.repoService.createRepo(userId,username,body.repo)
+    return await this.repoService.createRepo(
+      userId,
+      username,
+      body
+    );
   }
 }

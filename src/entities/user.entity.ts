@@ -14,7 +14,7 @@ export class User {
     @OneToMany(() => Comment,(comment) => comment.user)
     comment:Comment[]
 
-    @OneToMany(() => Comment,(comment) => comment.user)
+    @OneToMany(() => Post,(post) => post.user)
     post:Post[]
 
     @Column({nullable:false,unique:true,length:50})
