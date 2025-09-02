@@ -5,25 +5,18 @@ import { CreateRepoDto } from 'src/dto/RequestDto/CreateRepoDto';
 
 @Controller('repo')
 export class RepoController {
-  constructor(private readonly repoService: RepoService) {
-  }
+  constructor(private readonly repoService: RepoService) {}
 
-  @Get()
-  
   @UseGuards(JwtAuthGuard)
   @Get()
   async getRepo(@Req() req) {
-    return await this.repoService.getRepo(req.user.profile.userId)
+    return await this.repoService.getRepos(req.user.profile.userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async createRepo(@Req() req,@Body() body:CreateRepoDto) {
-    const { userId,username } = req.user.profile
-    return await this.repoService.createRepo(
-      userId,
-      username,
-      body
-    );
+  async createRepo(@Req() req, @Body() body: CreateRepoDto) {
+    const { userId, username } = req.user.profile;
+    return await this.repoService.createRepo(userId, username, body);
   }
 }

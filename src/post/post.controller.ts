@@ -10,7 +10,6 @@ export class PostController {
   async findAll() {
 
   }
-
   @Get(":id")
   async findOne(@Param('id') id:number) {
     

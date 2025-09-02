@@ -4,11 +4,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { JwtStrategy } from './auth/strategy/jwt.strategy';
-import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from '@nestjs/passport';
 import { GithubStrategy } from './auth/strategy/github.strategy';
 import { RepoModule } from './repo/repo.module';
 import { PostModule } from './post/post.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -23,7 +22,7 @@ import { PostModule } from './post/post.module';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
         entities: [__dirname + '/**/*.entity.{js,ts}'],
-        synchronize: true,// 배 포 할 때 끄 시 오 데 스 네 
+        synchronize: true, // 배 포 할 때 끄 시 오 데 스 네
       }),
       inject: [ConfigService],
     }),
@@ -34,11 +33,12 @@ import { PostModule } from './post/post.module';
     //     uri: configService.get<string>('MONGO_URL'),
     //   }),
     // }),
-    //AppModule,
+    AppModule,
     AuthModule,
     UserModule,
     RepoModule,
-    PostModule
+    PostModule,
+    CommonModule,
   ],
   controllers: [],
   providers: [
