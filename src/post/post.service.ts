@@ -2,9 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { CommonService } from 'src/common/common.service';
-import { Post } from 'src/entities/post.entity';
-import { User } from 'src/entities/user.entity';
-import { RepoService } from 'src/repo/repo.service';
+import { Post } from 'src/post/post.entity';
+import { User } from 'src/user/user.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -34,12 +33,14 @@ export class PostService {
       const res = await axios.get(url, {
         headers: this.commonService.header(token),
       });
+
       let content = Buffer.from(res.data.content, 'base64').toString('utf-8');
       let firstLine = content.split('\n')[0];
 
       if (firstLine == '') {
         firstLine = '무제';
       }
+
       await this.postRepository.save({
         user,
         title: firstLine,

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { RepoService } from './repo.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
-import { CreateRepoDto } from 'src/dto/RequestDto/CreateRepoDto';
+import { CreateRepoDto } from 'src/repo/dto/create-repo.dto';
 
 @Controller('repo')
 export class RepoController {
@@ -9,14 +9,20 @@ export class RepoController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async getRepo(@Req() req) {
+  async getRepo(@Req() req): Promise<string[]> {
     return await this.repoService.getRepos(req.user.profile.userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async createRepo(@Req() req, @Body() body: CreateRepoDto) {
+  async createRepo(@Req() req, @Body() dto: CreateRepoDto): Promise<{}> {
     const { userId, username } = req.user.profile;
-    return await this.repoService.createRepo(userId, username, body);
+    return await this.repoService.createRepo(userId, username, dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('post')
+  async createRepoWithPosts(@Req() req, @Body() dto: CreateRepoDto) {
+    await this.repoService.createRepoWithPosts(req.user.profile, dto);
   }
 }

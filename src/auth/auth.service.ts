@@ -1,10 +1,10 @@
 import * as CryptoJS from 'crypto-js';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { User } from '../entities/user.entity';
+import { User } from '../user/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { AuthResponseDto } from 'src/dto/ResponseDto/AuthResponseDto';
+import { AuthResponseDto } from 'src/auth/dto/auth-response.dto';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()

@@ -8,6 +8,7 @@ import { GithubStrategy } from './auth/strategy/github.strategy';
 import { RepoModule } from './repo/repo.module';
 import { PostModule } from './post/post.module';
 import { CommonModule } from './common/common.module';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { CommonModule } from './common/common.module';
     RepoModule,
     PostModule,
     CommonModule,
+    CommentModule,
   ],
   controllers: [],
   providers: [

@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { User } from 'src/entities/user.entity';
+import { User } from 'src/user/user.entity';
 import { Repository } from 'typeorm';
 import * as CryptoJS from 'crypto-js';
 import { InjectRepository } from '@nestjs/typeorm';
