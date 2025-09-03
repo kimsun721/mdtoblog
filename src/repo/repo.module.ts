@@ -5,9 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import { Repo } from 'src/entities/repo.entity';
 import { CommonModule } from 'src/common/common.module';
+import { PostModule } from 'src/post/post.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Repo]), CommonModule],
+  imports: [TypeOrmModule.forFeature([User, Repo]), CommonModule, PostModule],
   controllers: [RepoController],
   providers: [RepoService],
 })

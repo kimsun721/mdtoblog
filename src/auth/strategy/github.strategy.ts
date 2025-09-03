@@ -9,16 +9,21 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
     super({
       clientID: configService.get<string>('GITHUB_CLIENT_ID'),
       clientSecret: configService.get<string>('GITHUB_CLIENT_SECRET'),
-      scope: ['user:email','read:user','repo'],
+      scope: ['user:email', 'read:user', 'repo'],
     });
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: any, done: Function) {
-    const { username, emails  } = profile;
+  async validate(
+    accessToken: string,
+    refreshToken: string,
+    profile: any,
+    done: Function,
+  ) {
+    const { username, emails } = profile;
     const user = {
       email: emails[0].value,
       username,
-      githubAccessToken:accessToken,
+      githubAccessToken: accessToken,
     };
     done(null, user);
   }

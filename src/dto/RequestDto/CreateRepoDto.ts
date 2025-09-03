@@ -1,12 +1,14 @@
-import { IsArray, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateRepoDto {
-    @IsString()
-    repoName:string
-    
-    @IsArray()
-    ignorePath:string[]
+  @IsString()
+  repoName: string;
 
-    @IsNumber()
-    refreshIntervalMinutes:number
+  @IsArray()
+  @IsOptional()
+  ignorePath?: string[];
+
+  @IsNumber()
+  @IsOptional()
+  refreshIntervalMinutes?: number;
 }

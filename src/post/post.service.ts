@@ -37,8 +37,6 @@ export class PostService {
       let content = Buffer.from(res.data.content, 'base64').toString('utf-8');
       let firstLine = content.split('\n')[0];
 
-      console.log(firstLine);
-
       if (firstLine == '') {
         firstLine = '무제';
       }

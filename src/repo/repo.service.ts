@@ -14,6 +14,7 @@ import * as CryptoJS from 'crypto-js';
 import { Repo } from 'src/entities/repo.entity';
 import { Post } from 'src/entities/post.entity';
 import { CommonService } from 'src/common/common.service';
+import { PostService } from 'src/post/post.service';
 
 @Injectable()
 export class RepoService {
@@ -25,6 +26,7 @@ export class RepoService {
     private readonly repoRepository: Repository<Repo>,
 
     private readonly commonService: CommonService,
+    private readonly postService: PostService,
   ) {}
 
   async getRepos(userId: number): Promise<{ repo: string[] }> {
@@ -70,8 +72,11 @@ export class RepoService {
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) throw new BadRequestException('토큰 정보가 올바르지 않습니다');
 
+    const repoCheck = await this.repoRepository.findOneBy({ user: user });
+
     try {
       await this.repoRepository.save({
+        id: repoCheck?.id,
         user,
         repo: mdFiles,
         refresh_interval_minutes: refreshIntervalMinutes,
@@ -81,6 +86,12 @@ export class RepoService {
       throw new BadRequestException();
     }
 
-    // await this.createPosts(userId, username, repoName, token, mdFiles);
+    await this.postService.createPosts(
+      userId,
+      username,
+      repoName,
+      token,
+      mdFiles,
+    );
   }
 }
