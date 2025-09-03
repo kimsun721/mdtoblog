@@ -19,7 +19,10 @@ export class Repo {
   user: User;
 
   @Column({ nullable: false, type: 'json' })
-  repo: string[];
+  md_files: string[];
+
+  @Column({ nullable: false })
+  repo_name: string;
 
   @Column({ nullable: true, type: 'json' })
   ignore_path: string[];

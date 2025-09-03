@@ -1,11 +1,17 @@
 import * as CryptoJS from 'crypto-js';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { User } from '../user/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { AuthResponseDto } from 'src/auth/dto/auth-response.dto';
 import { ConfigService } from '@nestjs/config';
+import { OauthLoginDto } from './dto/oauth-login.dto';
 
 @Injectable()
 export class AuthService {
@@ -16,38 +22,27 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async oauthLogin(
-    email: string,
-    username: string,
-    accessToken: string,
-  ): Promise<AuthResponseDto> {
+  async oauthLogin(dto: OauthLoginDto): Promise<AuthResponseDto> {
+    const { email, userName, githubAccessToken } = dto;
+    console.log(dto);
     const user = await this.userRepository.findOneBy({ email });
 
-    let userId;
-    let res;
+    const res = await this.userSave(email, userName, githubAccessToken);
+    if (!res) {
+      throw new BadRequestException('USER_SAVE_ERROR');
+    }
 
+    let userId;
     if (user) {
       userId = user.id;
-      try {
-        res = await this.userSave(email, username, accessToken);
-      } catch (e) {
-        console.log(e);
-        throw new InternalServerErrorException('USER_SAVE_ERROR', e);
-      }
     } else {
-      try {
-        res = await this.userSave(email, username, accessToken);
-      } catch (e) {
-        console.log(e);
-        throw new InternalServerErrorException('USER_SAVE_ERROR');
-      }
       userId = res.id;
     }
 
     const payload = {
       userId,
       email,
-      username,
+      userName,
     };
 
     const token = this.jwtService.sign(payload); // .env에 expires in 들어있음
@@ -58,7 +53,7 @@ export class AuthService {
     };
   }
   async userSave(email: string, username: string, accessToken: string) {
-    const secretKey = await this.configService.get<string>('CRYPTO_SECRET');
+    const secretKey = await this.configService.get<string>('JWTKEY');
 
     const encryptedToken = CryptoJS.AES.encrypt(
       accessToken,

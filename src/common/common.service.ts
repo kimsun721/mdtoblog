@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { User } from 'src/user/user.entity';
 import { Repository } from 'typeorm';
@@ -33,5 +37,11 @@ export class CommonService {
     const token = bytes.toString(CryptoJS.enc.Utf8);
 
     return token;
+  }
+
+  async findUserOrFail(userId: number): Promise<User> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) throw new BadRequestException('토큰 정보가 올바르지 않습니다');
+    return user;
   }
 }

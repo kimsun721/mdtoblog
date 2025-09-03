@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { Repo } from 'src/repo/repo.entity';
 import { CommonService } from 'src/common/common.service';
 import { PostService } from 'src/post/post.service';
+import { RepoResponseDto } from './dto/repo-response.dto';
 
 @Injectable()
 export class RepoService {
@@ -37,13 +38,7 @@ export class RepoService {
     userId: number,
     userName: string,
     dto: CreateRepoDto,
-  ): Promise<{
-    userId: number;
-    userName: string;
-    repoName: string;
-    token: string;
-    mdFiles: string[];
-  }> {
+  ): Promise<RepoResponseDto> {
     const { repoName, ignorePath, refreshIntervalMinutes } = dto;
     const token = await this.commonService.tokenDecrypt(userId);
     const mdFiles: string[] = [];
@@ -84,7 +79,8 @@ export class RepoService {
     const res = await this.repoRepository.save({
       id: repoCheck?.id,
       user,
-      repo: mdFiles,
+      md_files: mdFiles,
+      repo_name: repoName,
       refresh_interval_minutes: refreshIntervalMinutes,
       ignore_path: ignorePath,
     });
@@ -104,12 +100,6 @@ export class RepoService {
   async createRepoWithPosts(user: any, dto: CreateRepoDto) {
     const { userId, username } = user;
     const repoRes = await this.createRepo(userId, username, dto);
-    const postRes = await this.postService.createPosts(
-      repoRes.userId,
-      repoRes.userName,
-      repoRes.repoName,
-      repoRes.token,
-      repoRes.mdFiles,
-    );
+    const postRes = await this.postService.createPost(userId);
   }
 }

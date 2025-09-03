@@ -3,6 +3,8 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { OauthLoginDto } from './dto/oauth-login.dto';
+import { plainToInstance } from 'class-transformer';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -19,10 +21,7 @@ export class AuthController {
     description: 'github oauth 로그인',
   })
   async githubRedirect(@Req() req) {
-    return await this.authService.oauthLogin(
-      req.user.email,
-      req.user.username,
-      req.user.githubAccessToken,
-    );
+    const dto = plainToInstance(OauthLoginDto, req.user);
+    return await this.authService.oauthLogin(dto);
   }
 }

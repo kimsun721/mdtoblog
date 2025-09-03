@@ -1,8 +1,8 @@
 import { Type } from 'class-transformer';
 import { IsNumber } from 'class-validator';
 
-export class GetPostsDto {
+export class GetPostDto {
   @IsNumber()
   @Type(() => Number)
-  userId: number;
+  id: number;
 }
