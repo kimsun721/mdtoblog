@@ -37,7 +37,7 @@ export class CustomExceptionFilter implements ExceptionFilter {
       let message;
       if (exceptionName == 'ER_DUP_ENTRY') {
         status = 409;
-        message = 'Duplicate Todo';
+        message = 'Duplicate Error';
       } else {
         console.log(exception);
         status = 500;

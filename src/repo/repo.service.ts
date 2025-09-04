@@ -42,15 +42,14 @@ export class RepoService {
     const { repoName, ignorePath, refreshIntervalMinutes } = dto;
     const token = await this.commonService.tokenDecrypt(userId);
     const mdFiles: string[] = [];
-
     const repos: string[] = await this.getRepos(userId);
+
     if (!repos.includes(repoName)) {
       throw new BadRequestException(); // repoName틀리게 요청올시
     }
 
     const browseDir = async (path: string) => {
       const url = `https://api.github.com/repos/${userName}/${repoName}/contents/${path}`;
-
       const res = await axios.get(url, {
         headers: this.commonService.header(token),
       });
@@ -71,13 +70,12 @@ export class RepoService {
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) throw new BadRequestException('토큰 정보가 올바르지 않습니다');
 
-    const repoCheck = await this.repoRepository.findOneBy({ user: user });
-    if (!repoCheck) {
-      throw new BadRequestException();
-    }
+    // const repoCheck = await this.repoRepository.findOneBy({ user: user });
+    // if (!repoCheck) {
+    //   throw new BadRequestException('qudtlsdk');
+    // }
 
     const res = await this.repoRepository.save({
-      id: repoCheck?.id,
       user,
       md_files: mdFiles,
       repo_name: repoName,

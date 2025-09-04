@@ -16,8 +16,8 @@ export class RepoController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async createRepo(@Req() req, @Body() dto: CreateRepoDto): Promise<{}> {
-    const { userId, username } = req.user.profile;
-    return await this.repoService.createRepo(userId, username, dto);
+    const { userId, userName } = req.user.profile;
+    return await this.repoService.createRepo(userId, userName, dto);
   }
 
   @UseGuards(JwtAuthGuard)

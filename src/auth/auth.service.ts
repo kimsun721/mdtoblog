@@ -19,9 +19,8 @@ export class AuthService {
 
   async oauthLogin(dto: OauthLoginDto): Promise<AuthResponseDto> {
     const { email, userName, githubAccessToken } = dto;
-    console.log(dto);
-    const res = await this.userSave(email, userName, githubAccessToken);
 
+    const res = await this.userSave(email, userName, githubAccessToken);
     const userId = res.id;
 
     const payload = {
@@ -38,18 +37,25 @@ export class AuthService {
     };
   }
   async userSave(email: string, username: string, githubAccessToken: string) {
-    const secretKey = await this.configService.get<string>('JWTKEY');
+    const user = await this.userRepository.findOneBy({ email });
+
+    const secretKey = await this.configService.get<string>('CRYPTO_SECRET');
 
     const encryptedToken = CryptoJS.AES.encrypt(
       githubAccessToken,
       secretKey,
     ).toString();
 
+    if (user) {
+      return user;
+    }
+
     const result = await this.userRepository.save({
       email,
       username,
       github_access_token: encryptedToken,
     });
+
     if (!result) {
       throw new BadRequestException('USER_SAVE_ERROR');
     }

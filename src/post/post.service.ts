@@ -43,6 +43,8 @@ export class PostService {
           'utf-8',
         );
 
+        console.log(res.data.sha);
+
         await this.postRepository.save({
           user,
           title: res.data.name,
