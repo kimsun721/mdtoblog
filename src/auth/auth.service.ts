@@ -1,11 +1,6 @@
 import * as CryptoJS from 'crypto-js';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { User } from '../user/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -25,19 +20,9 @@ export class AuthService {
   async oauthLogin(dto: OauthLoginDto): Promise<AuthResponseDto> {
     const { email, userName, githubAccessToken } = dto;
     console.log(dto);
-    const user = await this.userRepository.findOneBy({ email });
-
     const res = await this.userSave(email, userName, githubAccessToken);
-    if (!res) {
-      throw new BadRequestException('USER_SAVE_ERROR');
-    }
 
-    let userId;
-    if (user) {
-      userId = user.id;
-    } else {
-      userId = res.id;
-    }
+    const userId = res.id;
 
     const payload = {
       userId,
@@ -52,19 +37,22 @@ export class AuthService {
       accessToken: token,
     };
   }
-  async userSave(email: string, username: string, accessToken: string) {
+  async userSave(email: string, username: string, githubAccessToken: string) {
     const secretKey = await this.configService.get<string>('JWTKEY');
 
     const encryptedToken = CryptoJS.AES.encrypt(
-      accessToken,
+      githubAccessToken,
       secretKey,
     ).toString();
 
     const result = await this.userRepository.save({
       email,
       username,
-      access_token: encryptedToken,
+      github_access_token: encryptedToken,
     });
+    if (!result) {
+      throw new BadRequestException('USER_SAVE_ERROR');
+    }
 
     return result;
   }

@@ -30,5 +30,5 @@ export class User {
   username: string;
 
   @Column({ nullable: false, type: 'text' })
-  access_token: string;
+  github_access_token: string;
 }

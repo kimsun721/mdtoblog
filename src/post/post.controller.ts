@@ -1,17 +1,7 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { PostService } from './post.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
-import { GetPostsDto } from './dto/get-posts.dto';
 import { GetPostDto } from './dto/get-post.dto';
-import { CreatePostDto } from './dto/create-post.dto';
 
 @Controller('post')
 export class PostController {

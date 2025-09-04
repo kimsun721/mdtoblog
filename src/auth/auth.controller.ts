@@ -21,6 +21,7 @@ export class AuthController {
     description: 'github oauth 로그인',
   })
   async githubRedirect(@Req() req) {
+    console.log(req);
     const dto = plainToInstance(OauthLoginDto, req.user);
     return await this.authService.oauthLogin(dto);
   }
