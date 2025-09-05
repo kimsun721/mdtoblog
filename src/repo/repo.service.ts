@@ -39,10 +39,11 @@ export class RepoService {
     userName: string,
     dto: CreateRepoDto,
   ): Promise<RepoResponseDto> {
-    const { repoName, ignorePath, refreshIntervalMinutes } = dto;
+    let { repoName, ignorePath, refreshIntervalMinutes } = dto;
     const token = await this.commonService.tokenDecrypt(userId);
     const mdFiles: string[] = [];
     const repos: string[] = await this.getRepos(userId);
+    const ignoreLen = ignorePath?.length;
 
     if (!repos.includes(repoName)) {
       throw new BadRequestException(); // repoName틀리게 요청올시
@@ -53,11 +54,11 @@ export class RepoService {
       const res = await axios.get(url, {
         headers: this.commonService.header(token),
       });
-
       const data = res.data;
 
       for (const item of data) {
-        if (item.type === 'dir') {
+        if (item.path.includes(ignorePath) && ignoreLen != 0) {
+        } else if (item.type === 'dir') {
           await browseDir(item.path);
         } else if (item.type === 'file' && item.path.endsWith('.md')) {
           mdFiles.push(item.path);
@@ -69,11 +70,6 @@ export class RepoService {
 
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) throw new BadRequestException('토큰 정보가 올바르지 않습니다');
-
-    // const repoCheck = await this.repoRepository.findOneBy({ user: user });
-    // if (!repoCheck) {
-    //   throw new BadRequestException('qudtlsdk');
-    // }
 
     const res = await this.repoRepository.save({
       user,
@@ -94,6 +90,8 @@ export class RepoService {
       mdFiles,
     };
   }
+
+  // async updateRepo(userId: number, userName: string, dto: CreateRepoDto) {}
 
   async createRepoWithPosts(user: any, dto: CreateRepoDto) {
     const { userId, username } = user;
