@@ -9,9 +9,11 @@ import { RepoModule } from './repo/repo.module';
 import { PostModule } from './post/post.module';
 import { CommonModule } from './common/common.module';
 import { CommentModule } from './comment/comment.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

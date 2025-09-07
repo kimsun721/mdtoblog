@@ -13,8 +13,8 @@ export class PostController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post()
+  @Post('sync')
   async createPost(@Req() req) {
-    return await this.postService.createPost(req.user.profile.userId);
+    return await this.postService.syncPosts(req.user.profile.userId);
   }
 }

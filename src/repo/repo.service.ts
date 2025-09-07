@@ -8,6 +8,8 @@ import { Repo } from 'src/repo/repo.entity';
 import { CommonService } from 'src/common/common.service';
 import { PostService } from 'src/post/post.service';
 import { RepoResponseDto } from './dto/repo-response.dto';
+import { Cron } from '@nestjs/schedule';
+import { Post } from 'src/post/post.entity';
 
 @Injectable()
 export class RepoService {
@@ -17,6 +19,9 @@ export class RepoService {
 
     @InjectRepository(Repo)
     private readonly repoRepository: Repository<Repo>,
+
+    @InjectRepository(Post)
+    private readonly postRepository: Repository<Post>,
 
     private readonly commonService: CommonService,
     private readonly postService: PostService,
@@ -96,6 +101,24 @@ export class RepoService {
   async createRepoWithPosts(user: any, dto: CreateRepoDto) {
     const { userId, username } = user;
     const repoRes = await this.createRepo(userId, username, dto);
-    const postRes = await this.postService.createPost(userId);
+    const postRes = await this.postService.syncPosts(userId);
+  }
+
+  @Cron('*/5 * * * *')
+  async autoSyncPosts() {
+    const res = await this.repoRepository.find({ relations: ['user'] });
+    const now = new Date();
+    res.map(async (repo) => {
+      const diffMs = now.getTime() - repo.refreshed_at.getTime();
+      const diffMinutes = diffMs / (1000 * 60);
+      if (diffMinutes > repo.refresh_interval_minutes) {
+        await this.postService.syncPosts(repo.user.id);
+
+        await this.repoRepository.update(
+          { id: repo.id },
+          { refreshed_at: new Date() },
+        );
+      }
+    });
   }
 }

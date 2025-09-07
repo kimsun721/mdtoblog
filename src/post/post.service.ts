@@ -6,7 +6,6 @@ import { Post } from 'src/post/post.entity';
 import { Repository } from 'typeorm';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { GetPostDto } from './dto/get-post.dto';
-import { CreatePostDto } from './dto/create-post.dto';
 import { Repo } from 'src/repo/repo.entity';
 
 @Injectable()
@@ -20,8 +19,7 @@ export class PostService {
 
     private readonly commonService: CommonService,
   ) {}
-
-  async createPost(userId: number) {
+  async syncPosts(userId: number) {
     const user = await this.commonService.findUserOrFail(userId);
     const repo = await this.repoRepository.findOneOrFail({ where: { user } });
     const token = await this.commonService.tokenDecrypt(userId);
@@ -43,13 +41,18 @@ export class PostService {
           'utf-8',
         );
 
-        // console.log(res.data.sha);
+        const sha = res.data.sha;
 
-        await this.postRepository.save({
-          user,
-          title: res.data.name,
-          content,
-        });
+        const postExist = await this.postRepository.findOneBy({ sha });
+
+        if (!postExist) {
+          await this.postRepository.save({
+            user,
+            title: res.data.name,
+            content,
+            sha,
+          });
+        }
       }),
     );
 

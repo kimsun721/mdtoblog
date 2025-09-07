@@ -28,8 +28,8 @@ export class Post {
   @Column({ nullable: false, type: 'text' })
   content: string;
 
-  @CreateDateColumn({ nullable: false, type: 'timestamp' })
-  created_at: Date;
+  @Column({ nullable: false })
+  sha: string;
 
   @CreateDateColumn({ nullable: false, type: 'timestamp' })
   updated_at: Date;
