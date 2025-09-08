@@ -18,7 +18,7 @@ export class RepoController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async getRepo(@Req() req): Promise<string[]> {
-    return await this.repoService.getRepos(req.user.profile.userId);
+    return await this.repoService.fetchGithubRepos(req.user.profile.userId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -26,16 +26,5 @@ export class RepoController {
   async createRepo(@Req() req, @Body() dto: CreateRepoDto): Promise<{}> {
     const { userId, userName } = req.user.profile;
     return await this.repoService.createRepo(userId, userName, dto);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Post('post')
-  async createRepoWithPosts(@Req() req, @Body() dto: CreateRepoDto) {
-    await this.repoService.createRepoWithPosts(req.user.profile, dto);
-  }
-
-  @Get(':search')
-  async search(@Param('search') param: string) {
-    return await this.repoService.searchPost(param);
   }
 }

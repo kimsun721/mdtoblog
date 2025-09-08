@@ -25,9 +25,6 @@ export class PostService {
     const token = await this.commonService.tokenDecrypt(userId);
     const userName = user.username;
     const repoName = repo.repo_name;
-    if (!repoName) {
-      throw new NotFoundException('No repo has been specified yet');
-    }
     const mdFiles = repo.md_files;
 
     const posts = await Promise.all(
@@ -69,9 +66,6 @@ export class PostService {
     const res = await this.postRepository.find({
       where: { user: { id: userId } },
     });
-    if (!res) {
-      throw new NotFoundException();
-    }
 
     return res;
   }
@@ -84,6 +78,14 @@ export class PostService {
       throw new NotFoundException();
     }
 
+    return res;
+  }
+
+  async searchPost(keyword: string): Promise<Post[]> {
+    const res = await this.postRepository.query(
+      'SELECT * FROM post WHERE MATCH(title, content) AGAINST(? IN NATURAL LANGUAGE MODE);',
+      [keyword],
+    );
     return res;
   }
 }

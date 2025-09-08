@@ -1,5 +1,9 @@
 import { CreateRepoDto } from 'src/repo/dto/create-repo.dto';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { User } from 'src/user/user.entity';
@@ -8,7 +12,7 @@ import { Repo } from 'src/repo/repo.entity';
 import { CommonService } from 'src/common/common.service';
 import { PostService } from 'src/post/post.service';
 import { RepoResponseDto } from './dto/repo-response.dto';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { Post } from 'src/post/post.entity';
 
 @Injectable()
@@ -27,7 +31,7 @@ export class RepoService {
     private readonly postService: PostService,
   ) {}
 
-  async getRepos(userId: number): Promise<string[]> {
+  async fetchGithubRepos(userId: number): Promise<string[]> {
     const token = await this.commonService.tokenDecrypt(userId);
     const url = `https://api.github.com/user/repos`;
 
@@ -47,7 +51,7 @@ export class RepoService {
     let { repoName, ignorePath, refreshIntervalMinutes } = dto;
     const token = await this.commonService.tokenDecrypt(userId);
     const mdFiles: string[] = [];
-    const repos: string[] = await this.getRepos(userId);
+    const repos: string[] = await this.fetchGithubRepos(userId);
     const ignoreLen = ignorePath?.length;
 
     if (!repos.includes(repoName)) {
@@ -61,20 +65,22 @@ export class RepoService {
       });
       const data = res.data;
 
-      for (const item of data) {
-        if (item.path.includes(ignorePath) && ignoreLen != 0) {
+      const promises = data.map((item) => {
+        if (
+          ignorePath?.some((path) => item.path.includes(path)) &&
+          ignoreLen != 0
+        ) {
         } else if (item.type === 'dir') {
-          await browseDir(item.path);
+          browseDir(item.path);
         } else if (item.type === 'file' && item.path.endsWith('.md')) {
           mdFiles.push(item.path);
         }
-      }
+      });
     };
 
     await browseDir('');
 
-    const user = await this.userRepository.findOneBy({ id: userId });
-    if (!user) throw new BadRequestException('토큰 정보가 올바르지 않습니다');
+    const user = await this.commonService.findUserOrFail(userId);
 
     const res = await this.repoRepository.save({
       user,
@@ -96,19 +102,11 @@ export class RepoService {
     };
   }
 
-  // async updateRepo(userId: number, userName: string, dto: CreateRepoDto) {}
-
-  async createRepoWithPosts(user: any, dto: CreateRepoDto) {
-    const { userId, username } = user;
-    const repoRes = await this.createRepo(userId, username, dto);
-    const postRes = await this.postService.syncPosts(userId);
-  }
-
-  @Cron('*/5 * * * *')
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async autoSyncPosts() {
     const res = await this.repoRepository.find({ relations: ['user'] });
     const now = new Date();
-    res.map(async (repo) => {
+    const result = res.map(async (repo) => {
       const diffMs = now.getTime() - repo.refreshed_at.getTime();
       const diffMinutes = diffMs / (1000 * 60);
       if (diffMinutes > repo.refresh_interval_minutes) {
@@ -118,14 +116,9 @@ export class RepoService {
           { id: repo.id },
           { refreshed_at: new Date() },
         );
+
+        return repo;
       }
     });
-  }
-  async searchPost(keyword: string): Promise<Post[]> {
-    const res = await this.postRepository.query(
-      'SELECT * FROM post WHERE MATCH(title, content) AGAINST(? IN NATURAL LANGUAGE MODE);',
-      [keyword],
-    );
-    return res;
   }
 }

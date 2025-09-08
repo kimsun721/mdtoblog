@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { PostService } from './post.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { GetPostDto } from './dto/get-post.dto';
@@ -16,5 +24,10 @@ export class PostController {
   @Post('sync')
   async createPost(@Req() req) {
     return await this.postService.syncPosts(req.user.profile.userId);
+  }
+
+  @Get('')
+  async search(@Query('search') query: string) {
+    return await this.postService.searchPost(query);
   }
 }
