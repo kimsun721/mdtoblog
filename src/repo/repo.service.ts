@@ -50,13 +50,18 @@ export class RepoService {
   ): Promise<RepoResponseDto> {
     let { repoName, ignorePath, refreshIntervalMinutes } = dto;
     const token = await this.commonService.tokenDecrypt(userId);
-    const mdFiles: string[] = [];
+    const mdFiles: { path: string; sha: string }[] = [];
     const repos: string[] = await this.fetchGithubRepos(userId);
     const ignoreLen = ignorePath?.length;
 
     if (!repos.includes(repoName)) {
       throw new BadRequestException(); // repoName틀리게 요청올시
     }
+
+    const shaCheck = await this.repoRepository.findOneBy({
+      repo_name: repoName,
+    });
+    const shaFiles = shaCheck?.md_files;
 
     const browseDir = async (path: string) => {
       const url = `https://api.github.com/repos/${userName}/${repoName}/contents/${path}`;
@@ -71,10 +76,15 @@ export class RepoService {
           ignoreLen != 0
         ) {
           return;
+        } else if (
+          item.sha == shaFiles?.find((file) => file.path === item.path)?.sha
+        ) {
+          console.log(1);
+          return;
         } else if (item.type === 'dir') {
           return browseDir(item.path);
         } else if (item.type === 'file' && item.path.endsWith('.md')) {
-          mdFiles.push(item.path);
+          mdFiles.push({ path: item.path, sha: item.sha });
           return;
         }
       });
@@ -84,6 +94,8 @@ export class RepoService {
     await browseDir('');
 
     const user = await this.commonService.findUserOrFail(userId);
+
+    console.log(mdFiles);
 
     const res = await this.repoRepository.save({
       user,

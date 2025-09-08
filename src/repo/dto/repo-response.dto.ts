@@ -14,5 +14,5 @@ export class RepoResponseDto {
   token: string;
 
   @IsArray()
-  mdFiles: string[];
+  mdFiles: { path; sha }[];
 }

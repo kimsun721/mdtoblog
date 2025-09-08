@@ -17,8 +17,8 @@ export class Repo {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column({ nullable: false, type: 'json' })
-  md_files: string[];
+  @Column({ nullable: true, type: 'json' })
+  md_files: { sha: string; path: string }[];
 
   @Column({ nullable: false })
   repo_name: string;

@@ -21,12 +21,12 @@ export class PostController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('')
+  @Post()
   async createPost(@Req() req) {
     return await this.postService.syncPosts(req.user.profile.userId);
   }
 
-  @Get('')
+  @Get()
   async search(@Query('search') query: string) {
     return await this.postService.searchPost(query);
   }
