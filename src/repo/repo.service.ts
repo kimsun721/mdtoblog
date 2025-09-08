@@ -70,12 +70,15 @@ export class RepoService {
           ignorePath?.some((path) => item.path.includes(path)) &&
           ignoreLen != 0
         ) {
+          return;
         } else if (item.type === 'dir') {
-          browseDir(item.path);
+          return browseDir(item.path);
         } else if (item.type === 'file' && item.path.endsWith('.md')) {
           mdFiles.push(item.path);
+          return;
         }
       });
+      await Promise.all(promises.filter(Boolean));
     };
 
     await browseDir('');

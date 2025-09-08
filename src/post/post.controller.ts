@@ -21,7 +21,7 @@ export class PostController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('sync')
+  @Post('')
   async createPost(@Req() req) {
     return await this.postService.syncPosts(req.user.profile.userId);
   }
