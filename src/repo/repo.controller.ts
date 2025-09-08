@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { RepoService } from './repo.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { CreateRepoDto } from 'src/repo/dto/create-repo.dto';
@@ -24,5 +32,10 @@ export class RepoController {
   @Post('post')
   async createRepoWithPosts(@Req() req, @Body() dto: CreateRepoDto) {
     await this.repoService.createRepoWithPosts(req.user.profile, dto);
+  }
+
+  @Get(':search')
+  async search(@Param('search') param: string) {
+    return await this.repoService.searchPost(param);
   }
 }

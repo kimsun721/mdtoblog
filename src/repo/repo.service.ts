@@ -121,4 +121,11 @@ export class RepoService {
       }
     });
   }
+  async searchPost(keyword: string): Promise<Post[]> {
+    const res = await this.postRepository.query(
+      'SELECT * FROM post WHERE MATCH(title, content) AGAINST(? IN NATURAL LANGUAGE MODE);',
+      [keyword],
+    );
+    return res;
+  }
 }
