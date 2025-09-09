@@ -7,11 +7,11 @@ export class Repo {
   @PrimaryGeneratedColumn({ unsigned: true })
   id: number;
 
-  @ManyToOne(() => User, (user) => user.repo)
+  @ManyToOne(() => User, (user) => user.repo, { onDelete: "CASCADE" })
   @JoinColumn({ name: "user_id" })
   user: User;
 
-  @OneToMany(() => Post, (post) => post.repo)
+  @OneToMany(() => Post, (post) => post.repo, { onDelete: "CASCADE" })
   post: Post;
 
   @Column({ nullable: true, type: "json" })

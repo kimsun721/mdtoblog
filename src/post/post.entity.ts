@@ -7,7 +7,7 @@ export class Post {
   @PrimaryGeneratedColumn({ unsigned: true })
   id: number;
 
-  @ManyToOne(() => Repo, (repo) => repo.post)
+  @ManyToOne(() => Repo, (repo) => repo.post, { onDelete: "CASCADE" })
   @JoinColumn({ name: "repo_id" })
   repo: Repo;
 
