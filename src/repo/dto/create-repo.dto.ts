@@ -4,6 +4,10 @@ export class CreateRepoDto {
   @IsString()
   repoName: string;
 
+  @IsString()
+  @IsOptional()
+  branch?: string;
+
   @IsArray()
   @IsOptional()
   ignorePath?: string[];

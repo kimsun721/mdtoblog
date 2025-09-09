@@ -1,31 +1,24 @@
-import { CreateRepoDto } from 'src/repo/dto/create-repo.dto';
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import axios from 'axios';
-import { User } from 'src/user/user.entity';
-import { Repository } from 'typeorm';
-import { Repo } from 'src/repo/repo.entity';
-import { CommonService } from 'src/common/common.service';
-import { PostService } from 'src/post/post.service';
-import { RepoResponseDto } from './dto/repo-response.dto';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { Post } from 'src/post/post.entity';
+import { DeleteRepoDto } from "./dto/delete-repo.dto";
+import { CreateRepoDto } from "src/repo/dto/create-repo.dto";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import axios from "axios";
+import { User } from "src/user/user.entity";
+import { Repository } from "typeorm";
+import { Repo } from "src/repo/repo.entity";
+import { CommonService } from "src/common/common.service";
+import { PostService } from "src/post/post.service";
+import { Cron, CronExpression } from "@nestjs/schedule";
+import { Post } from "src/post/post.entity";
 
 @Injectable()
 export class RepoService {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectRepository(Post)
+    private readonly postRepository: Repository<Post>,
 
     @InjectRepository(Repo)
     private readonly repoRepository: Repository<Repo>,
-
-    @InjectRepository(Post)
-    private readonly postRepository: Repository<Post>,
 
     private readonly commonService: CommonService,
     private readonly postService: PostService,
@@ -43,64 +36,48 @@ export class RepoService {
     return repoNames;
   }
 
-  async createRepo(
-    userId: number,
-    userName: string,
-    dto: CreateRepoDto,
-  ): Promise<RepoResponseDto> {
-    let { repoName, ignorePath, refreshIntervalMinutes } = dto;
-    const token = await this.commonService.tokenDecrypt(userId);
-    const mdFiles: { path: string; sha: string }[] = [];
-    const repos: string[] = await this.fetchGithubRepos(userId);
+  async createRepo(userId: number, userName: string, dto: CreateRepoDto): Promise<{ mdFiles: string[]; success: boolean }> {
+    const { repoName, ignorePath, refreshIntervalMinutes } = dto;
     const ignoreLen = ignorePath?.length;
 
+    const token = await this.commonService.tokenDecrypt(userId);
+    const user = await this.commonService.findUserOrFail(userId);
+    const repos: string[] = await this.fetchGithubRepos(userId);
+
     if (!repos.includes(repoName)) {
-      throw new BadRequestException(); // repoName틀리게 요청올시
+      throw new BadRequestException();
     }
 
-    const shaCheck = await this.repoRepository.findOneBy({
-      repo_name: repoName,
+    let result;
+
+    const url = `https://api.github.com/repos/${userName}/${repoName}/branches/mai1n`;
+    result = await axios.get(url, {
+      headers: this.commonService.header(token),
     });
-    const shaFiles = shaCheck?.md_files;
 
-    const browseDir = async (path: string) => {
-      const url = `https://api.github.com/repos/${userName}/${repoName}/contents/${path}`;
-      const res = await axios.get(url, {
-        headers: this.commonService.header(token),
-      });
-      const data = res.data;
+    const sha = result.data.commit.sha;
 
-      const promises = data.map((item) => {
-        if (
-          ignorePath?.some((path) => item.path.includes(path)) &&
-          ignoreLen != 0
-        ) {
-          return;
-        } else if (
-          item.sha == shaFiles?.find((file) => file.path === item.path)?.sha
-        ) {
-          console.log(1);
-          return;
-        } else if (item.type === 'dir') {
-          return browseDir(item.path);
-        } else if (item.type === 'file' && item.path.endsWith('.md')) {
-          mdFiles.push({ path: item.path, sha: item.sha });
-          return;
-        }
-      });
-      await Promise.all(promises.filter(Boolean));
-    };
+    const url2 = `https://api.github.com/repos/${userName}/${repoName}/git/trees/${sha}?recursive=1`;
 
-    await browseDir('');
+    const allRepo = await axios.get(url2, {
+      headers: this.commonService.header(token),
+    });
 
-    const user = await this.commonService.findUserOrFail(userId);
+    const data = allRepo.data.tree;
+    const f = data.filter((data) => {
+      const ignore = ignorePath?.some((path) => data.path.includes(path)) && ignoreLen != 0;
+      const hidden = data.path.startsWith(".");
+      const md = data.path.endsWith(".md");
+      return !ignore && !hidden && md;
+    });
 
-    console.log(mdFiles);
+    const mdFiles = f.map((d) => d.path);
 
     const res = await this.repoRepository.save({
       user,
       md_files: mdFiles,
       repo_name: repoName,
+      commit_sha: sha,
       refresh_interval_minutes: refreshIntervalMinutes,
       ignore_path: ignorePath,
     });
@@ -109,17 +86,14 @@ export class RepoService {
     }
 
     return {
-      userId,
-      userName,
-      repoName,
-      token,
       mdFiles,
+      success: true,
     };
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async autoSyncPosts() {
-    const res = await this.repoRepository.find({ relations: ['user'] });
+    const res = await this.repoRepository.find({ relations: ["user"] });
     const now = new Date();
     const result = res.map(async (repo) => {
       const diffMs = now.getTime() - repo.refreshed_at.getTime();
@@ -127,10 +101,7 @@ export class RepoService {
       if (diffMinutes > repo.refresh_interval_minutes) {
         await this.postService.syncPosts(repo.user.id);
 
-        await this.repoRepository.update(
-          { id: repo.id },
-          { refreshed_at: new Date() },
-        );
+        await this.repoRepository.update({ id: repo.id }, { refreshed_at: new Date() });
 
         return repo;
       }

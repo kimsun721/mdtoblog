@@ -18,7 +18,7 @@ export class Repo {
   user: User;
 
   @Column({ nullable: true, type: 'json' })
-  md_files: { sha: string; path: string }[];
+  md_files: string[];
 
   @Column({ nullable: false })
   repo_name: string;
@@ -29,6 +29,12 @@ export class Repo {
   @Column({ type: 'int', default: 4320 })
   refresh_interval_minutes: number;
 
+  @Column({ nullable: false })
+  commit_sha: string;
+
   @CreateDateColumn({ nullable: false, type: 'datetime' })
   refreshed_at: Date;
+
+  @CreateDateColumn({ nullable: false, type: 'datetime' })
+  created_at: Date;
 }
