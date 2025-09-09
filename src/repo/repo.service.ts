@@ -50,7 +50,7 @@ export class RepoService {
 
     let result;
 
-    const url = `https://api.github.com/repos/${userName}/${repoName}/branches/mai1n`;
+    const url = `https://api.github.com/repos/${userName}/${repoName}/branches/main`;
     result = await axios.get(url, {
       headers: this.commonService.header(token),
     });
@@ -89,6 +89,19 @@ export class RepoService {
       mdFiles,
       success: true,
     };
+  }
+
+  async deleteRepo(dto: DeleteRepoDto) {
+    const { userId, repoId } = dto;
+
+    const user = await this.commonService.findUserOrFail(userId);
+    const repoExist = await this.repoRepository.findOneBy({ id: repoId });
+    if (!repoExist) {
+      throw new NotFoundException("존재하지 않는 레포지토리입니다.");
+    }
+
+    const ress = await this.postRepository.delete({});
+    const res = await this.repoRepository.delete;
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)

@@ -1,12 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import axios from 'axios';
-import { CommonService } from 'src/common/common.service';
-import { Post } from 'src/post/post.entity';
-import { Repository } from 'typeorm';
-import { GetPostsDto } from './dto/get-posts.dto';
-import { GetPostDto } from './dto/get-post.dto';
-import { Repo } from 'src/repo/repo.entity';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import axios from "axios";
+import { CommonService } from "src/common/common.service";
+import { Post } from "src/post/post.entity";
+import { Repository } from "typeorm";
+import { GetPostsDto } from "./dto/get-posts.dto";
+import { GetPostDto } from "./dto/get-post.dto";
+import { Repo } from "src/repo/repo.entity";
 
 @Injectable()
 export class PostService {
@@ -34,9 +34,7 @@ export class PostService {
           headers: this.commonService.header(token),
         });
 
-        const content = Buffer.from(res.data.content, 'base64').toString(
-          'utf-8',
-        );
+        const content = Buffer.from(res.data.content, "base64").toString("utf-8");
 
         const sha = res.data.sha;
 
@@ -45,6 +43,7 @@ export class PostService {
         if (!postExist) {
           await this.postRepository.save({
             user,
+            repo,
             title: res.data.name,
             content,
             sha,
@@ -63,9 +62,7 @@ export class PostService {
 
     const user = await this.commonService.findUserOrFail(userId);
 
-    const res = await this.postRepository.find({
-      where: { user: { id: userId } },
-    });
+    const res = await this.postRepository.find({});
 
     return res;
   }
@@ -82,10 +79,7 @@ export class PostService {
   }
 
   async searchPost(keyword: string): Promise<Post[]> {
-    const res = await this.postRepository.query(
-      'SELECT * FROM post WHERE MATCH(title, content) AGAINST(? IN NATURAL LANGUAGE MODE);',
-      [keyword],
-    );
+    const res = await this.postRepository.query("SELECT * FROM post WHERE MATCH(title, content) AGAINST(? IN NATURAL LANGUAGE MODE);", [keyword]);
     return res;
   }
 }
