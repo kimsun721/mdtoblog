@@ -39,7 +39,7 @@ export class PostService {
 
     return res;
   }
-  async syncPosts(userId: number) {
+  async syncPosts(userId: number, pushed_at: Date) {
     const user = await this.commonService.findUserOrFail(userId);
     const repo = await this.repoRepository.findOneOrFail({ where: { user } });
     const token = await this.commonService.tokenDecrypt(userId);
@@ -54,11 +54,6 @@ export class PostService {
           headers: this.commonService.header(token),
         });
 
-        const url2 = `https://api.github.com/repos/${userName}/${repoName}`;
-        const result = await axios.get(url2, {
-          headers: this.commonService.header(token),
-        });
-
         const content = Buffer.from(res.data.content, 'base64').toString('utf-8');
         const sha = res.data.sha;
         const postExist = await this.postRepository.findOneBy({ sha });
@@ -68,7 +63,7 @@ export class PostService {
             user,
             repo,
             title: res.data.name,
-            updated_at: result.data.pushed_at,
+            updated_at: pushed_at,
             content,
             sha,
           });

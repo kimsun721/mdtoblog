@@ -97,6 +97,13 @@ export class RepoService {
       throw new BadRequestException();
     }
 
+    // const webHookUrl = `https://api.github.com/repos/${userName}/${repoName}/hooks`;
+    // await axios.post(
+    //   webHookUrl,
+    //   { Headers: this.commonService.header(token) },
+    //   { name: '
+    // );
+
     return {
       mdFiles,
       success: true,
@@ -224,6 +231,6 @@ export class RepoService {
       },
     );
 
-    return { affected: res.affected };
+    return await this.postService.syncPosts(repo.user.id, pushed_at);
   }
 }

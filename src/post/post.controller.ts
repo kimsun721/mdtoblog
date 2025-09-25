@@ -23,9 +23,9 @@ export class PostController {
     return await this.postService.getPost(dto);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Post()
-  async createPost(@Req() req) {
-    return await this.postService.syncPosts(req.user.profile.userId);
-  }
+  // @UseGuards(JwtAuthGuard)
+  // @Post()
+  // async createPost(@Req() req) {
+  //   return await this.postService.syncPosts(req.user.profile.userId);
+  // }
 }
