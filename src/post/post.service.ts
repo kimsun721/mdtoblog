@@ -1,12 +1,12 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import axios from "axios";
-import { CommonService } from "src/common/common.service";
-import { Post } from "src/post/post.entity";
-import { Repository } from "typeorm";
-import { GetPostsDto } from "./dto/get-posts.dto";
-import { GetPostDto } from "./dto/get-post.dto";
-import { Repo } from "src/repo/repo.entity";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import axios from 'axios';
+import { CommonService } from 'src/common/common.service';
+import { Post } from 'src/post/post.entity';
+import { Repository } from 'typeorm';
+import { GetPostsDto } from './dto/get-posts.dto';
+import { GetPostDto } from './dto/get-post.dto';
+import { Repo } from 'src/repo/repo.entity';
 
 @Injectable()
 export class PostService {
@@ -19,6 +19,26 @@ export class PostService {
 
     private readonly commonService: CommonService,
   ) {}
+
+  async getAllPosts(page: number, limit: number) {
+    const res = await this.postRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.user', 'user')
+      .select([
+        'post.id',
+        'post.title',
+        'post.updated_at',
+        'post.content',
+        'user.id',
+        'user.username',
+      ])
+      .orderBy('post.updated_at', 'ASC')
+      .take(limit)
+      .skip((page - 1) * limit)
+      .getMany();
+
+    return res;
+  }
   async syncPosts(userId: number) {
     const user = await this.commonService.findUserOrFail(userId);
     const repo = await this.repoRepository.findOneOrFail({ where: { user } });
@@ -34,17 +54,21 @@ export class PostService {
           headers: this.commonService.header(token),
         });
 
-        const content = Buffer.from(res.data.content, "base64").toString("utf-8");
+        const url2 = `https://api.github.com/repos/${userName}/${repoName}`;
+        const result = await axios.get(url2, {
+          headers: this.commonService.header(token),
+        });
 
+        const content = Buffer.from(res.data.content, 'base64').toString('utf-8');
         const sha = res.data.sha;
-
         const postExist = await this.postRepository.findOneBy({ sha });
 
-        if (!postExist) {
+        if (!postExist && content) {
           await this.postRepository.save({
             user,
             repo,
             title: res.data.name,
+            updated_at: result.data.pushed_at,
             content,
             sha,
           });
@@ -70,16 +94,41 @@ export class PostService {
   async getPost(dto: GetPostDto): Promise<Post> {
     const { id } = dto;
 
-    const res = await this.postRepository.findOneBy({ id });
+    // const res = await this.postRepository.findOne({ where: { id }, relations: ['user'] });
+    const res = await this.postRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.user', 'user')
+      .select([
+        'post.id',
+        'post.title',
+        'post.content',
+        'post.updated_at',
+        'post.views',
+        'user.id',
+        'user.username',
+      ])
+      .take(1)
+      .where('post.id = :id', { id })
+      .getOne();
     if (!res) {
       throw new NotFoundException();
     }
+    const views = res.views + 1;
+    await this.postRepository.update({ id }, { views });
 
     return res;
   }
 
   async searchPost(keyword: string): Promise<Post[]> {
-    const res = await this.postRepository.query("SELECT * FROM post WHERE MATCH(title, content) AGAINST(? IN NATURAL LANGUAGE MODE);", [keyword]);
+    const res = await this.postRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.user', 'user')
+      .where(
+        'MATCH(post.title, post.content) AGAINST(:keyword IN NATURAL LANGUAGE MODE)',
+        { keyword },
+      )
+      .getMany();
+
     return res;
   }
 }

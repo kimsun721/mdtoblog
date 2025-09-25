@@ -1,10 +1,12 @@
 import { ConfigService } from '@nestjs/config';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { OauthLoginDto } from './dto/oauth-login.dto';
 import { plainToInstance } from 'class-transformer';
+import { Response } from 'express';
+import { JwtAuthGuard } from './guards/jwt.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -20,8 +22,26 @@ export class AuthController {
     summary: 'github 로그인',
     description: 'github oauth 로그인',
   })
-  async githubRedirect(@Req() req) {
+  async githubRedirect(@Req() req, @Res({ passthrough: true }) res: Response) {
     const dto = plainToInstance(OauthLoginDto, req.user);
-    return await this.authService.oauthLogin(dto);
+
+    const result = await this.authService.oauthLogin(dto);
+
+    res.cookie('accessToken', result.accessToken, {
+      httpOnly: true,
+      secure: false,
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    res.redirect('http://localhost:5173/');
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async loginCheck(@Req() req) {
+    console.log(req.uesr.profile.userName);
+    return { user: req.user.profile.userName };
   }
 }

@@ -45,18 +45,22 @@ export class CustomExceptionFilter implements ExceptionFilter {
     } else if (exception.response) {
       const status = Number(exception.response.data.status);
       const message: string = exception.response.data.message;
+      console.log(exception);
       console.log(status, message);
       response.status(status).json({
         statusCode: status,
         message,
       });
     } else {
-      console.log(exception);
+      console.log(exception, 1123123);
       const message = 'INTERNAL_SERVER_ERROR';
       response.status(500).json({
         statusCode: 500,
         message,
       });
+    }
+    if (!response.headersSent) {
+      response.status(200);
     }
   }
 }

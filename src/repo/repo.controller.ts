@@ -53,4 +53,13 @@ export class RepoController {
   ) {
     return await this.repoService.patchRepo(req.user.profile.id, repoId, dto);
   }
+
+  // 깃허브 웹훅 연동 api
+  @Post('webhook')
+  async handleWebhook(@Req() req) {
+    return await this.repoService.handleRepoUpdate(
+      req.body.repository.name,
+      req.body.repository.pushed_at,
+    );
+  }
 }

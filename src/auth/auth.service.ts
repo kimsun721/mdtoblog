@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthResponseDto } from 'src/auth/dto/auth-response.dto';
 import { ConfigService } from '@nestjs/config';
 import { OauthLoginDto } from './dto/oauth-login.dto';
+import axios from 'axios';
 
 @Injectable()
 export class AuthService {
@@ -30,29 +31,36 @@ export class AuthService {
     };
 
     const token = this.jwtService.sign(payload); // .env에 expires in 들어있음
-
+    console.log(token);
     return {
       success: true,
       accessToken: token,
     };
   }
-  async userSave(email: string, username: string, githubAccessToken: string) {
+  async userSave(email: string, userName: string, githubAccessToken: string) {
     const user = await this.userRepository.findOneBy({ email });
 
     const secretKey = await this.configService.get<string>('CRYPTO_SECRET');
 
-    const encryptedToken = CryptoJS.AES.encrypt(
-      githubAccessToken,
-      secretKey,
-    ).toString();
+    const encryptedToken = CryptoJS.AES.encrypt(githubAccessToken, secretKey).toString();
 
     if (user) {
+      await this.userRepository.update(
+        { id: user.id },
+        { github_access_token: encryptedToken },
+      );
       return user;
     }
 
+    const url = `https://api.github.com/users/${userName}`;
+    const res = await axios.get(url, {});
+
+    console.log(res.data.avatar_url);
+
     const result = await this.userRepository.save({
       email,
-      username,
+      username: userName,
+      profile_url: res.data.avatar_url,
       github_access_token: encryptedToken,
     });
 

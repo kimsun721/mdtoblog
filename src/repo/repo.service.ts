@@ -164,20 +164,66 @@ export class RepoService {
     };
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
-  async autoSyncPosts() {
-    const res = await this.repoRepository.find({ relations: ['user'] });
-    const now = new Date();
-    const result = res.map(async (repo) => {
-      const diffMs = now.getTime() - repo.refreshed_at.getTime();
-      const diffMinutes = diffMs / (1000 * 60);
-      if (diffMinutes > repo.refresh_interval_minutes) {
-        await this.postService.syncPosts(repo.user.id);
+  // 오늘할거 이거 구혀혀현하기
+  // 일단 작동 방식
+  // commit sha 랑 내 db 커밋 sha 랑 비교하하고
+  // 다르면 sync repo 실행
+  // sync repo 로직
 
-        await this.repoRepository.update({ id: repo.id }, { refreshed_at: new Date() });
+  // 일단 레포 이름 ? 뭐있지
 
-        return repo;
-      }
+  async handleRepoUpdate(repoName: string, pushed_at: Date) {
+    const repo = await this.repoRepository.findOne({
+      where: { repo_name: repoName },
+      relations: ['user'],
     });
+    if (!repo) {
+      throw new NotFoundException('존재하지않는 레포입니다.');
+    }
+
+    const token = await this.commonService.tokenDecrypt(repo.user.id);
+    const userName = repo.user.username;
+
+    if (repo.updated_at == pushed_at) {
+      return;
+    }
+
+    // 레포 동기화 로직
+
+    const url = `https://api.github.com/repos/${userName}/${repoName}/branches/main`;
+    console.log(token);
+    const result = await axios.get(url, {
+      headers: this.commonService.header(token),
+    });
+
+    const sha = result.data.commit.sha;
+    const ignorePath = repo.ignore_path;
+    const ignoreLen = ignorePath.length;
+
+    const url2 = `https://api.github.com/repos/${userName}/${repoName}/git/trees/${sha}?recursive=1`;
+    const allRepo = await axios.get(url2, {
+      headers: this.commonService.header(token),
+    });
+
+    const data = allRepo.data.tree;
+    const f = data.filter((data) => {
+      const ignore =
+        ignorePath?.some((path) => data.path.includes(path)) && ignoreLen != 0;
+      const hidden = data.path.startsWith('.');
+      const md = data.path.endsWith('.md');
+      return !ignore && !hidden && md;
+    });
+
+    const mdFiles = f.map((d) => d.path);
+
+    const res = await this.repoRepository.update(
+      { id: repo.id },
+      {
+        md_files: mdFiles,
+        updated_at: pushed_at,
+      },
+    );
+
+    return { affected: res.affected };
   }
 }
