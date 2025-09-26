@@ -11,8 +11,4 @@ export class CreateRepoDto {
   @IsArray()
   @IsOptional()
   ignorePath?: string[];
-
-  @IsNumber()
-  @IsOptional()
-  refreshIntervalMinutes?: number;
 }

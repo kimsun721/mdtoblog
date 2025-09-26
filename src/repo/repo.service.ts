@@ -17,6 +17,7 @@ import { PostService } from 'src/post/post.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Post } from 'src/post/post.entity';
 import { PatchRepoDto } from './dto/patch-repo.dto';
+import { CreateWebHookDto } from './dto/set-webhook.dto';
 
 @Injectable()
 export class RepoService {
@@ -48,7 +49,7 @@ export class RepoService {
     userName: string,
     dto: CreateRepoDto,
   ): Promise<{ mdFiles: string[]; success: boolean }> {
-    const { repoName, ignorePath, refreshIntervalMinutes } = dto;
+    const { repoName, ignorePath } = dto;
     const ignoreLen = ignorePath?.length;
 
     const token = await this.commonService.tokenDecrypt(userId);
@@ -90,19 +91,26 @@ export class RepoService {
       md_files: mdFiles,
       repo_name: repoName,
       commit_sha: sha,
-      refresh_interval_minutes: refreshIntervalMinutes,
       ignore_path: ignorePath,
     });
     if (!res) {
       throw new BadRequestException();
     }
 
-    // const webHookUrl = `https://api.github.com/repos/${userName}/${repoName}/hooks`;
-    // await axios.post(
-    //   webHookUrl,
-    //   { Headers: this.commonService.header(token) },
-    //   { name: '
-    // );
+    const webHookBody: CreateWebHookDto = {
+      name: 'web',
+      active: true,
+      events: ['push'],
+      config: {
+        url: 'https://8917817da5ce.ngrok-free.app/api/repo/webhook',
+        content_type: 'json',
+        insecure_ssl: '0',
+      },
+    };
+    const webHookUrl = `https://api.github.com/repos/${userName}/${repoName}/hooks`;
+    await axios.post(webHookUrl, webHookBody, {
+      headers: this.commonService.header(token),
+    });
 
     return {
       mdFiles,
@@ -153,10 +161,6 @@ export class RepoService {
     if (ignorePath) {
       updateData.ignore_path = ignorePath;
     }
-    if (refreshIntervalMinutes) {
-      updateData.refresh_interval_minutes = refreshIntervalMinutes;
-    }
-    console.log(updateData);
 
     // if(!branch) {
     //   updateData.branch = branch;
@@ -170,14 +174,6 @@ export class RepoService {
       success: true,
     };
   }
-
-  // 오늘할거 이거 구혀혀현하기
-  // 일단 작동 방식
-  // commit sha 랑 내 db 커밋 sha 랑 비교하하고
-  // 다르면 sync repo 실행
-  // sync repo 로직
-
-  // 일단 레포 이름 ? 뭐있지
 
   async handleRepoUpdate(repoName: string, pushed_at: Date) {
     const repo = await this.repoRepository.findOne({
@@ -198,7 +194,6 @@ export class RepoService {
     // 레포 동기화 로직
 
     const url = `https://api.github.com/repos/${userName}/${repoName}/branches/main`;
-    console.log(token);
     const result = await axios.get(url, {
       headers: this.commonService.header(token),
     });

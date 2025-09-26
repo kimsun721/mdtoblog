@@ -32,9 +32,6 @@ export class Repo {
   @Column({ nullable: true, type: 'json' })
   ignore_path: string[];
 
-  @Column({ type: 'int', default: 4320 })
-  refresh_interval_minutes: number;
-
   @CreateDateColumn({ nullable: false, type: 'datetime' })
   updated_at: Date;
 
