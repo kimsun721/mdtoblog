@@ -13,7 +13,7 @@ import { User } from 'src/user/user.entity';
 
 @Entity()
 export class Post {
-  @PrimaryGeneratedColumn({ unsigned: true })
+  @PrimaryGeneratedColumn({ name: 'id', unsigned: true })
   id: number;
 
   @ManyToOne(() => Repo, (repo) => repo.post, { onDelete: 'CASCADE' })

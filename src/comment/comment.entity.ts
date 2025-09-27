@@ -1,4 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from '../user/user.entity';
 import { Post } from '../post/post.entity';
 
@@ -12,7 +19,7 @@ export class Comment {
   user: User;
 
   @ManyToOne(() => Post, (post) => post.comment, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'target_id' })
+  @JoinColumn({ name: 'post_id' })
   post: Post;
 
   @Column({ name: 'parent_id', nullable: true, type: 'int' })
@@ -21,9 +28,9 @@ export class Comment {
   @Column({ nullable: false, type: 'text' })
   content: string;
 
-  @Column({ name: 'created_at', nullable: false, type: 'datetime' })
+  @CreateDateColumn({ name: 'created_at', nullable: false, type: 'datetime' })
   createdAt: Date;
 
-  @Column({ name: 'updatedAt', nullable: false, type: 'datetime' })
+  @CreateDateColumn({ name: 'updatedAt', nullable: false, type: 'datetime' })
   updatedAt: Date;
 }
