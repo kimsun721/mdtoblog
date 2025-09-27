@@ -46,16 +46,18 @@ export class CommentService {
       throw new UnauthorizedException('토큰 문제 발생');
     }
 
-    const comment = await this.commentRepository.findOneBy({ id: parentId });
-    if (!comment) {
-      throw new NotFoundException();
+    if (parentId) {
+      const comment = await this.commentRepository.findOneBy({ id: parentId });
+      if (!comment) {
+        throw new NotFoundException();
+      }
     }
 
     return await this.commentRepository.save({
-      post: { id: postId },
+      post: { id: post.id },
       parentId,
       content,
-      user: { id: userId },
+      user: { id: user.id },
     });
   }
 }
