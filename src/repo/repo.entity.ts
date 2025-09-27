@@ -23,18 +23,18 @@ export class Repo {
   @OneToMany(() => Post, (post) => post.repo, { onDelete: 'CASCADE' })
   post: Post;
 
-  @Column({ nullable: true, type: 'json' })
-  md_files: string[];
+  @Column({ name: 'md_files', nullable: true, type: 'json' })
+  mdFiles: string[];
 
-  @Column({ nullable: false })
-  repo_name: string;
+  @Column({ name: 'repo_name', nullable: false })
+  repoName: string;
 
-  @Column({ nullable: true, type: 'json' })
-  ignore_path: string[];
+  @Column({ name: 'ignore_path', nullable: true, type: 'json' })
+  ignorePath: string[];
 
-  @CreateDateColumn({ nullable: false, type: 'datetime' })
-  updated_at: Date;
+  @CreateDateColumn({ name: 'updated_at', nullable: false, type: 'datetime' })
+  updatedAt: Date;
 
-  @CreateDateColumn({ nullable: false, type: 'datetime' })
-  created_at: Date;
+  @CreateDateColumn({ name: 'created_at', nullable: false, type: 'datetime' })
+  createdAt: Date;
 }

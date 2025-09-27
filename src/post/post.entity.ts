@@ -42,6 +42,6 @@ export class Post {
   @Column({ nullable: false })
   sha: string;
 
-  @CreateDateColumn({ nullable: false, type: 'timestamp' })
-  updated_at: Date;
+  @CreateDateColumn({ name: 'updated_at', nullable: false, type: 'timestamp' })
+  updatedAt: Date;
 }

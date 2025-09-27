@@ -20,12 +20,12 @@ export class User {
   @Column({ nullable: false, unique: true, length: 50 })
   email: string;
 
-  @Column({ nullable: false, unique: true, length: 500 })
-  username: string;
+  @Column({ name: 'user_name', nullable: false, unique: true, length: 500 })
+  userName: string;
 
-  @Column({ nullable: false })
-  profile_url: string;
+  @Column({ name: 'profile_url', nullable: false })
+  profileUrl: string;
 
-  @Column({ nullable: false, type: 'text' })
-  github_access_token: string;
+  @Column({ name: 'github_access_token', nullable: false, type: 'text' })
+  githubAccessToken: string;
 }

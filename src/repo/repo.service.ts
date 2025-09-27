@@ -9,12 +9,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
-import { User } from 'src/user/user.entity';
 import { Repository } from 'typeorm';
 import { Repo } from 'src/repo/repo.entity';
 import { CommonService } from 'src/common/common.service';
 import { PostService } from 'src/post/post.service';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { Post } from 'src/post/post.entity';
 import { PatchRepoDto } from './dto/patch-repo.dto';
 import { CreateWebHookDto } from './dto/set-webhook.dto';
@@ -50,7 +48,6 @@ export class RepoService {
     dto: CreateRepoDto,
   ): Promise<{ mdFiles: string[]; success: boolean }> {
     const { repoName, ignorePath } = dto;
-    const ignoreLen = ignorePath?.length;
 
     const token = await this.commonService.tokenDecrypt(userId);
     const user = await this.commonService.findUserOrFail(userId);
@@ -75,16 +72,16 @@ export class RepoService {
       headers: this.commonService.header(token),
     });
 
-    const data = allRepo.data.tree;
-    const f = data.filter((data) => {
-      const ignore =
-        ignorePath?.some((path) => data.path.includes(path)) && ignoreLen != 0;
-      const hidden = data.path.startsWith('.');
-      const md = data.path.endsWith('.md');
-      return !ignore && !hidden && md;
-    });
-
-    const mdFiles = f.map((d) => d.path);
+    const ignorePathArr = ignorePath ?? [];
+    const tree = allRepo.data.tree;
+    const mdFiles: string[] = tree
+      .filter(
+        (d) =>
+          !ignorePathArr.some((path) => d.path.includes(path)) &&
+          !d.path.startsWith('.') &&
+          d.path.endsWith('.md'),
+      )
+      .map((d) => d.path);
 
     const res = await this.repoRepository.save({
       user,
@@ -159,8 +156,10 @@ export class RepoService {
 
     const updateData: Partial<Repo> = {};
     if (ignorePath) {
-      updateData.ignore_path = ignorePath;
+      updateData.ignorePath = ignorePath;
     }
+
+    // TODO:나중에 브랜치 main 고정으로 두든 뭐 어떻게든 고치기
 
     // if(!branch) {
     //   updateData.branch = branch;
@@ -177,7 +176,7 @@ export class RepoService {
 
   async handleRepoUpdate(repoName: string, pushed_at: Date) {
     const repo = await this.repoRepository.findOne({
-      where: { repo_name: repoName },
+      where: { repoName },
       relations: ['user'],
     });
     if (!repo) {
@@ -185,9 +184,9 @@ export class RepoService {
     }
 
     const token = await this.commonService.tokenDecrypt(repo.user.id);
-    const userName = repo.user.username;
+    const userName = repo.user.userName;
 
-    if (repo.updated_at == pushed_at) {
+    if (repo.updatedAt == pushed_at) {
       return;
     }
 
@@ -199,7 +198,7 @@ export class RepoService {
     });
 
     const sha = result.data.commit.sha;
-    const ignorePath = repo.ignore_path;
+    const ignorePath = repo.ignorePath;
     const ignoreLen = ignorePath.length;
 
     const url2 = `https://api.github.com/repos/${userName}/${repoName}/git/trees/${sha}?recursive=1`;
@@ -207,22 +206,22 @@ export class RepoService {
       headers: this.commonService.header(token),
     });
 
-    const data = allRepo.data.tree;
-    const f = data.filter((data) => {
-      const ignore =
-        ignorePath?.some((path) => data.path.includes(path)) && ignoreLen != 0;
-      const hidden = data.path.startsWith('.');
-      const md = data.path.endsWith('.md');
-      return !ignore && !hidden && md;
-    });
+    const ignorePathArr = ignorePath ?? [];
+    const tree = allRepo.data.tree;
+    const mdFiles: string[] = tree
+      .filter(
+        (d) =>
+          !ignorePathArr.some((path) => d.path.includes(path)) &&
+          !d.path.startsWith('.') &&
+          d.path.endsWith('.md'),
+      )
+      .map((d) => d.path);
 
-    const mdFiles = f.map((d) => d.path);
-
-    const res = await this.repoRepository.update(
+    await this.repoRepository.update(
       { id: repo.id },
       {
-        md_files: mdFiles,
-        updated_at: pushed_at,
+        mdFiles,
+        updatedAt: pushed_at,
       },
     );
 

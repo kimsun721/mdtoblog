@@ -47,7 +47,7 @@ export class AuthService {
     if (user) {
       await this.userRepository.update(
         { id: user.id },
-        { github_access_token: encryptedToken },
+        { githubAccessToken: encryptedToken },
       );
       return user;
     }

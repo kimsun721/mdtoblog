@@ -29,7 +29,7 @@ export class CommonService {
       throw new ForbiddenException('토큰 정보가 올바르지 않습니다');
     }
 
-    const bytes = CryptoJS.AES.decrypt(res?.github_access_token, secretKey);
+    const bytes = CryptoJS.AES.decrypt(res?.githubAccessToken, secretKey);
     const token = bytes.toString(CryptoJS.enc.Utf8);
 
     return token;

@@ -43,9 +43,9 @@ export class PostService {
     const user = await this.commonService.findUserOrFail(userId);
     const repo = await this.repoRepository.findOneOrFail({ where: { user } });
     const token = await this.commonService.tokenDecrypt(userId);
-    const userName = user.username;
-    const repoName = repo.repo_name;
-    const mdFiles = repo.md_files;
+    const userName = user.userName;
+    const repoName = repo.repoName;
+    const mdFiles = repo.mdFiles;
 
     const posts = await Promise.all(
       mdFiles.map(async (path) => {
