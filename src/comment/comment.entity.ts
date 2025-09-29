@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../user/user.entity';
 import { Post } from '../post/post.entity';
@@ -31,6 +32,6 @@ export class Comment {
   @CreateDateColumn({ name: 'created_at', nullable: false, type: 'datetime' })
   createdAt: Date;
 
-  @CreateDateColumn({ name: 'updatedAt', nullable: false, type: 'datetime' })
+  @UpdateDateColumn({ name: 'updated_at', nullable: false, type: 'datetime' })
   updatedAt: Date;
 }

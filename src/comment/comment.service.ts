@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Comment } from './comment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +12,8 @@ import { User } from 'src/user/user.entity';
 import { Post } from 'src/post/post.entity';
 import { plainToInstance } from 'class-transformer';
 import { GetCommentsResponseDto } from './dto/get-comments.dto';
+import { UpdateCommentDto, UpdateCommentResponseDto } from './dto/update-comment.dto';
+import { CommonService } from 'src/common/common.service';
 
 @Injectable()
 export class CommentService {
@@ -19,6 +26,8 @@ export class CommentService {
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    private readonly commonService: CommonService,
   ) {}
   async getComments(id: number): Promise<GetCommentsResponseDto[]> {
     const comments = await this.commentRepository.find({
@@ -60,4 +69,31 @@ export class CommentService {
       user: { id: user.id },
     });
   }
+
+  async updateComment(userId: number, commentId: number, dto: UpdateCommentDto) {
+    const { content } = dto;
+
+    let comment = await this.commentRepository.findOne({
+      where: { id: commentId },
+      relations: ['user'],
+      select: { id: true, content: true, user: { id: true } },
+    });
+    if (!comment) {
+      throw new NotFoundException('존재하지 않는 댓글입니다.');
+    } else if (comment.user.id != userId) {
+      throw new ForbiddenException();
+    }
+
+    if (comment.content != content) {
+      comment.content = content;
+
+      await this.commentRepository.save(comment);
+    }
+
+    return plainToInstance(UpdateCommentResponseDto, comment, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async deleteComment(userId: number, commentId: number) {}
 }
