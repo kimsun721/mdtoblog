@@ -95,5 +95,19 @@ export class CommentService {
     });
   }
 
-  async deleteComment(userId: number, commentId: number) {}
+  async deleteComment(userId: number, commentId: number) {
+    const comment = await this.commentRepository.findOne({
+      where: { id: commentId },
+      relations: ['user'],
+      select: { id: true, user: { id: true } },
+    });
+
+    if (!comment) {
+      throw new NotFoundException();
+    } else if (comment.user.id != userId) {
+      throw new ForbiddenException();
+    }
+    await this.commentRepository.softDelete(comment.id);
+    return;
+  }
 }

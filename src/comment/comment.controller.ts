@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -39,5 +40,12 @@ export class CommentController {
     @Body() dto: UpdateCommentDto,
   ) {
     return await this.commentService.updateComment(req.user.profile.userId, id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  @HttpCode(204)
+  async deleteComment(@Param('id') id: number, @Req() req) {
+    return await this.commentService.deleteComment(req.user.profile.userId, id);
   }
 }
