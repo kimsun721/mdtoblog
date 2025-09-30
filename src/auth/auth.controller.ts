@@ -30,9 +30,7 @@ export class AuthController {
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: false,
-      maxAge: 1000 * 60 * 60 * 24 * 7,
       sameSite: 'lax',
-      path: '/',
     });
 
     res.redirect('http://localhost:5173/');

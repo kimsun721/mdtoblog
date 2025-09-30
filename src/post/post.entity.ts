@@ -6,6 +6,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Comment } from '../comment/comment.entity';
 import { Repo } from 'src/repo/repo.entity';
@@ -42,6 +43,9 @@ export class Post {
   @Column({ nullable: false })
   sha: string;
 
-  @CreateDateColumn({ name: 'updated_at', nullable: false, type: 'timestamp' })
+  @CreateDateColumn({ name: 'created_at', nullable: false, type: 'timestamp' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', nullable: false, type: 'timestamp' })
   updatedAt: Date;
 }

@@ -55,8 +55,6 @@ export class AuthService {
     const url = `https://api.github.com/users/${userName}`;
     const res = await axios.get(url, {});
 
-    console.log(res.data.avatar_url);
-
     const result = await this.userRepository.save({
       email,
       username: userName,

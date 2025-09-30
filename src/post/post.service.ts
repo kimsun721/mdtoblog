@@ -27,12 +27,13 @@ export class PostService {
       .select([
         'post.id',
         'post.title',
-        'post.updated_at',
+        'post.updatedAt',
         'post.content',
         'user.id',
-        'user.username',
+        'user.userName',
+        'user.profileUrl',
       ])
-      .orderBy('post.updated_at', 'ASC')
+      .orderBy('post.updatedAt', 'ASC')
       .take(limit)
       .skip((page - 1) * limit)
       .getMany();
@@ -89,22 +90,19 @@ export class PostService {
   async getPost(dto: GetPostDto): Promise<Post> {
     const { id } = dto;
 
-    // const res = await this.postRepository.findOne({ where: { id }, relations: ['user'] });
-    const res = await this.postRepository
-      .createQueryBuilder('post')
-      .leftJoinAndSelect('post.user', 'user')
-      .select([
-        'post.id',
-        'post.title',
-        'post.content',
-        'post.updated_at',
-        'post.views',
-        'user.id',
-        'user.username',
-      ])
-      .take(1)
-      .where('post.id = :id', { id })
-      .getOne();
+    const res = await this.postRepository.findOne({
+      where: { id },
+      relations: ['user', 'comment'],
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        updatedAt: true,
+        views: true,
+        user: { id: true, userName: true },
+        comment: { id: true, user: true, content: true },
+      },
+    });
     if (!res) {
       throw new NotFoundException();
     }

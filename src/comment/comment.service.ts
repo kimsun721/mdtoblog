@@ -108,6 +108,7 @@ export class CommentService {
       throw new ForbiddenException();
     }
     await this.commentRepository.softDelete(comment.id);
+
     return;
   }
 }

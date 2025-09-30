@@ -7,6 +7,7 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../user/user.entity';
 import { Post } from 'src/post/post.entity';
@@ -32,7 +33,7 @@ export class Repo {
   @Column({ name: 'ignore_path', nullable: true, type: 'json' })
   ignorePath: string[];
 
-  @CreateDateColumn({ name: 'updated_at', nullable: false, type: 'datetime' })
+  @UpdateDateColumn({ name: 'updated_at', nullable: false, type: 'datetime' })
   updatedAt: Date;
 
   @CreateDateColumn({ name: 'created_at', nullable: false, type: 'datetime' })
