@@ -23,8 +23,8 @@ export class User {
   @Column({ name: 'user_name', nullable: false, unique: true, length: 500 })
   userName: string;
 
-  @Column({ name: 'profile_url', nullable: false })
-  profileUrl: string;
+  @Column({ name: 'profile_id', nullable: false })
+  profileId: string;
 
   @Column({ name: 'github_access_token', nullable: false, type: 'text' })
   githubAccessToken: string;

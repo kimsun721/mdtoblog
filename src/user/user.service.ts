@@ -17,7 +17,7 @@ export class UserService {
     });
     if (!user) throw new NotFoundException();
 
-    return user.profileUrl;
+    return user.profileId;
   }
 
   async getUserProfile(id: number) {
@@ -28,7 +28,7 @@ export class UserService {
         id: true,
         userName: true,
         email: true,
-        profileUrl: true,
+        profileId: true,
         repo: { repoName: true, mdFiles: true, ignorePath: true },
         post: { title: true, views: true, likes: true, updatedAt: true },
         comment: true,

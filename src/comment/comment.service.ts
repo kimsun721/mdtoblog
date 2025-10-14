@@ -42,7 +42,7 @@ export class CommentService {
     return res;
   }
 
-  async createComment(dto: CreateCommentDto, userId: number) {
+  async createComment(dto: CreateCommentDto, userId: number): Promise<Comment> {
     const { postId, parentId, content } = dto;
 
     const post = await this.postRepository.findOneBy({ id: postId });
@@ -70,7 +70,11 @@ export class CommentService {
     });
   }
 
-  async updateComment(userId: number, commentId: number, dto: UpdateCommentDto) {
+  async updateComment(
+    userId: number,
+    commentId: number,
+    dto: UpdateCommentDto,
+  ): Promise<UpdateCommentResponseDto> {
     const { content } = dto;
 
     let comment = await this.commentRepository.findOne({
@@ -95,7 +99,7 @@ export class CommentService {
     });
   }
 
-  async deleteComment(userId: number, commentId: number) {
+  async deleteComment(userId: number, commentId: number): Promise<undefined> {
     const comment = await this.commentRepository.findOne({
       where: { id: commentId },
       relations: ['user'],
