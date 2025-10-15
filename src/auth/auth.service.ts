@@ -1,6 +1,6 @@
 import * as CryptoJS from 'crypto-js';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { User } from '../user/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -8,6 +8,7 @@ import { AuthResponseDto } from 'src/auth/dto/auth-response.dto';
 import { ConfigService } from '@nestjs/config';
 import { OauthLoginDto } from './dto/oauth-login.dto';
 import axios from 'axios';
+import { loginCheckDto } from './dto/login-check.dto';
 
 @Injectable()
 export class AuthService {
@@ -20,6 +21,8 @@ export class AuthService {
 
   async oauthLogin(dto: OauthLoginDto): Promise<AuthResponseDto> {
     const { email, userName, githubAccessToken } = dto;
+
+    console.log(dto);
 
     const res = await this.userSave(email, userName, githubAccessToken);
     const userId = res.id;
@@ -37,6 +40,7 @@ export class AuthService {
       accessToken: token,
     };
   }
+
   async userSave(email: string, userName: string, githubAccessToken: string) {
     const user = await this.userRepository.findOneBy({ email });
 
@@ -57,15 +61,25 @@ export class AuthService {
 
     const result = await this.userRepository.save({
       email,
-      username: userName,
-      profile_url: res.data.avatar_url,
-      github_access_token: encryptedToken,
+      userName,
+      githubId: res.data.id,
+      githubAccessToken: encryptedToken,
     });
 
-    if (!result) {
-      throw new BadRequestException('USER_SAVE_ERROR');
+    return result;
+  }
+
+  async loginCheck(dto: loginCheckDto) {
+    const { userId } = dto;
+    const githubId = await this.userRepository.findOne({
+      where: { id: userId },
+      select: ['githubId'],
+    });
+
+    if (!githubId) {
+      throw new UnauthorizedException();
     }
 
-    return result;
+    return githubId;
   }
 }

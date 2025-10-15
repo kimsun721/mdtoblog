@@ -38,7 +38,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async loginCheck(@Req() req) { 
-    return { user: req.user.profile.userName }; 
+  async loginCheck(@Req() req) {
+    return await this.authService.loginCheck(req.user.profile.userId);
   }
 }

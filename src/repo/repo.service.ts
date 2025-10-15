@@ -85,10 +85,9 @@ export class RepoService {
 
     const res = await this.repoRepository.save({
       user,
-      md_files: mdFiles,
-      repo_name: repoName,
-      commit_sha: sha,
-      ignore_path: ignorePath,
+      mdFiles,
+      repoName,
+      ignorePath,
     });
     if (!res) {
       throw new BadRequestException();
@@ -199,7 +198,6 @@ export class RepoService {
 
     const sha = result.data.commit.sha;
     const ignorePath = repo.ignorePath;
-    const ignoreLen = ignorePath.length;
 
     const url2 = `https://api.github.com/repos/${userName}/${repoName}/git/trees/${sha}?recursive=1`;
     const allRepo = await axios.get(url2, {

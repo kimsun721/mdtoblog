@@ -22,7 +22,6 @@ export class CommonService {
 
   async tokenDecrypt(userId: number): Promise<string> {
     const secretKey = this.configService.get<string>('CRYPTO_SECRET');
-
     const res = await this.userRepository.findOneBy({ id: userId });
 
     if (!res) {

@@ -31,7 +31,7 @@ export class PostService {
         'post.content',
         'user.id',
         'user.userName',
-        'user.profileUrl',
+        'user.githubId',
       ])
       .orderBy('post.updatedAt', 'ASC')
       .take(limit)

@@ -22,10 +22,10 @@ export class UserController {
     return await this.userService.getUserProfile(id);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('profileUrl')
-  async getProfileUrl(@Req() req) {
-    console.log(req.user.profile);
-    return await this.userService.getProfileUrl(req.user.profile);
-  }
+  // @UseGuards(JwtAuthGuard)
+  // @Get('profileUrl')
+  // async getProfileUrl(@Req() req) {
+  //   console.log(req.user.profile);
+  //   return await this.userService.getProfileUrl(req.user.profile);
+  // }
 }

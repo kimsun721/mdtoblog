@@ -10,16 +10,6 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async getProfileUrl(dto: GetProfileUrlDto) {
-    const { id } = dto;
-    const user = await this.userRepository.findOne({
-      where: { id },
-    });
-    if (!user) throw new NotFoundException();
-
-    return user.profileId;
-  }
-
   async getUserProfile(id: number) {
     const user = await this.userRepository.findOne({
       where: { id },
@@ -28,7 +18,7 @@ export class UserService {
         id: true,
         userName: true,
         email: true,
-        profileId: true,
+        githubId: true,
         repo: { repoName: true, mdFiles: true, ignorePath: true },
         post: { title: true, views: true, likes: true, updatedAt: true },
         comment: true,
