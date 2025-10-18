@@ -36,9 +36,12 @@ export class AuthController {
     res.redirect('http://localhost:5173/');
   }
 
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
+  // @Get()
+  // async checkAccess(@Req() req) {
+  //   return await this.authService.loginCheck(req.user.profile.userId);
+  // }
+
   @Get()
-  async loginCheck(@Req() req) {
-    return await this.authService.loginCheck(req.user.profile.userId);
-  }
+  async refreshAccess() {}
 }

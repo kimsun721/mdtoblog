@@ -26,11 +26,13 @@ export class AuthService {
 
     const res = await this.userSave(email, userName, githubAccessToken);
     const userId = res.id;
+    const githubId = res.githubId;
 
     const payload = {
       userId,
       email,
       userName,
+      githubId,
     };
 
     const token = this.jwtService.sign(payload); // .env에 expires in 들어있음
@@ -69,17 +71,19 @@ export class AuthService {
     return result;
   }
 
-  async loginCheck(dto: loginCheckDto) {
-    const { userId } = dto;
-    const githubId = await this.userRepository.findOne({
-      where: { id: userId },
-      select: ['githubId'],
-    });
+  // async loginCheck(dto: loginCheckDto) {
+  //   const { userId } = dto;
+  //   const githubId = await this.userRepository.findOne({
+  //     where: { id: userId },
+  //     select: ['githubId'],
+  //   });
 
-    if (!githubId) {
-      throw new UnauthorizedException();
-    }
+  //   if (!githubId) {
+  //     throw new UnauthorizedException();
+  //   }
 
-    return githubId;
-  }
+  //   return githubId;
+  // }
+
+  async refresh() {}
 }

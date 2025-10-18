@@ -98,7 +98,7 @@ export class RepoService {
       active: true,
       events: ['push'],
       config: {
-        url: 'https://8917817da5ce.ngrok-free.app/api/repo/webhook',
+        url: 'https://8917817da5ce.ngrok-free.app/api/repo/webhook', // 나중에 배포하면 백엔드 URL 넣기
         content_type: 'json',
         insecure_ssl: '0',
       },
