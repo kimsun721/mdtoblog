@@ -23,6 +23,9 @@ export class User {
   @Column({ name: 'user_name', nullable: false, unique: true, length: 500 })
   userName: string;
 
+  @Column({ name: 'refresh_token', nullable: true, type: 'varchar' })
+  refreshToken: string | null;
+
   @Column({ name: 'github_id', nullable: false })
   githubId: number;
 

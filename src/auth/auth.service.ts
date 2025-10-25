@@ -23,38 +23,34 @@ export class AuthService {
     const { email, userName, githubAccessToken } = dto;
 
     const res = await this.userSave(email, userName, githubAccessToken);
-    const userId = res.id;
-    const githubId = res.githubId;
 
-    const payload = {
-      userId,
-      email,
-      userName,
-      githubId,
-    };
-
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '30d' });
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '10m' });
     return {
       success: true,
-      accessToken: accessToken,
-      refreshToken: refreshToken,
+      accessToken: res.accessToken,
+      refreshToken: res.refreshToken,
     };
   }
 
   async userSave(email: string, userName: string, githubAccessToken: string) {
     const user = await this.userRepository.findOneBy({ email });
-
     const secretKey = await this.configService.get<string>('CRYPTO_SECRET');
-
     const encryptedToken = CryptoJS.AES.encrypt(githubAccessToken, secretKey).toString();
 
     if (user) {
+      const payload = {
+        userId: user?.id,
+        email,
+        userName,
+        githubId: user?.githubId,
+      };
+      const refreshToken = this.jwtService.sign(payload, { expiresIn: '30d' });
+      const accessToken = this.jwtService.sign(payload, { expiresIn: '10m' });
+
       await this.userRepository.update(
         { id: user.id },
-        { githubAccessToken: encryptedToken },
+        { githubAccessToken: encryptedToken, refreshToken },
       );
-      return user;
+      return { accessToken, refreshToken };
     }
 
     const url = `https://api.github.com/users/${userName}`;
@@ -67,7 +63,17 @@ export class AuthService {
       githubAccessToken: encryptedToken,
     });
 
-    return result;
+    const payload = {
+      userId: result.id,
+      email,
+      userName,
+      githubId: res.data.id,
+    };
+    const refreshToken = this.jwtService.sign(payload, { expiresIn: '30d' });
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '10m' });
+    await this.userRepository.update({ id: result.id }, { refreshToken });
+
+    return { accessToken, refreshToken };
   }
 
   // async loginCheck(dto: loginCheckDto) {
@@ -84,5 +90,28 @@ export class AuthService {
   //   return githubId;
   // }
 
-  async refresh() {}
+  async refresh(refreshToken: string) {
+    const user = await this.userRepository.findOne({ where: { refreshToken } });
+    if (!user) {
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    const r = await this.jwtService.decode(refreshToken);
+    const expiredDate = new Date(r.exp * 1000);
+    if (new Date() > expiredDate) {
+      await this.userRepository.update({ id: user.id }, { refreshToken: null });
+
+      throw new UnauthorizedException('Invaild token');
+    }
+
+    const payload = {
+      userId: user.id,
+      email: user.email,
+      userName: user.userName,
+      githubId: user.githubId,
+    };
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '10m' });
+
+    return accessToken;
+  }
 }

@@ -1,7 +1,16 @@
 import { ConfigService } from '@nestjs/config';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { OauthLoginDto } from './dto/oauth-login.dto';
 import { plainToInstance } from 'class-transformer';
@@ -44,6 +53,17 @@ export class AuthController {
 
   @Get()
   async refreshAccess(@Req() req) {
-    console.log(req.headers.cookie);
+    const cookie: string = req.headers.cookie;
+    const refreshToken = cookie
+      ?.split(';')
+      .map((v) => v.trim())
+      .find((v) => v.startsWith('refreshToken='))
+      ?.split('=')[1];
+
+    if (!refreshToken) {
+      throw new UnauthorizedException('No token');
+    }
+
+    return await this.authService.refresh(refreshToken);
   }
 }
