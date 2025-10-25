@@ -154,11 +154,26 @@ export class RepoService {
       throw new InternalServerErrorException('삭제중 서버에서 에러 발생');
     }
 
-    const url = `https://api.github.com/repos/${repo.user.userName}/${repo.repoName}/hooks`;
+    const url = `https://api.github.com/repos/${repo?.user.userName}/${repo?.repoName}/hooks`;
     const token = await this.commonService.tokenDecrypt(userId);
-    await axios.get(url, {
-      headers: this.commonService.header(token),
-    });
+    let hookId = 0;
+    try {
+      const hooks = await axios.get(url, {
+        headers: this.commonService.header(token),
+      });
+      hookId = hooks.data.find(
+        (v) => v.config.url === 'https://8917817da5ce.ngrok-free.app/api/repo/webhook',
+      )?.id;
+    } catch (e) {
+      console.log(e);
+    }
+
+    if (hookId) {
+      const url = `https://api.github.com/repos/${repo?.user.userName}/${repo?.repoName}/hooks/${hookId}`;
+      await axios.delete(url, {
+        headers: this.commonService.header(token),
+      });
+    }
 
     return {
       success: true,
