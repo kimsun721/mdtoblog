@@ -27,7 +27,7 @@ export class AuthController {
 
     const result = await this.authService.oauthLogin(dto);
 
-    res.cookie('accessToken', result.accessToken, {
+    res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: false,
       sameSite: 'lax',
@@ -43,5 +43,7 @@ export class AuthController {
   // }
 
   @Get()
-  async refreshAccess() {}
+  async refreshAccess(@Req() req) {
+    console.log(req.headers.cookie);
+  }
 }

@@ -21,9 +21,6 @@ import { CreateWebHookDto } from './dto/set-webhook.dto';
 @Injectable()
 export class RepoService {
   constructor(
-    @InjectRepository(Post)
-    private readonly postRepository: Repository<Post>,
-
     @InjectRepository(Repo)
     private readonly repoRepository: Repository<Repo>,
 

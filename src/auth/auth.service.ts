@@ -33,10 +33,12 @@ export class AuthService {
       githubId,
     };
 
-    const token = this.jwtService.sign(payload); // .env에 expires in 들어있음
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '30d' });
+    const refreshToken = this.jwtService.sign(payload, { expiresIn: '10m' });
     return {
       success: true,
-      accessToken: token,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
     };
   }
 
