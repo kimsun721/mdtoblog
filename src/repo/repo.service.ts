@@ -2,6 +2,7 @@ import { DeleteRepoDto } from './dto/delete-repo.dto';
 import { CreateRepoDto } from 'src/repo/dto/create-repo.dto';
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -57,6 +58,14 @@ export class RepoService {
       throw new BadRequestException();
     }
 
+    const sameRepo = await this.repoRepository.findOne({
+      where: { repoName, user: { id: userId } },
+      relations: ['user'],
+    });
+    if (sameRepo) {
+      throw new ConflictException('중복되는 레포지토리입니다.');
+    }
+
     let result;
 
     const url = `https://api.github.com/repos/${userName}/${repoName}/branches/main`;
@@ -83,6 +92,10 @@ export class RepoService {
       )
       .map((d) => d.path);
 
+    if (mdFiles.length == 0) {
+      throw new NotFoundException('조건에 맞는 md파일이 레포에 존재하지 않습니다.');
+    }
+
     const res = await this.repoRepository.save({
       user,
       mdFiles,
@@ -104,9 +117,11 @@ export class RepoService {
       },
     };
     const webHookUrl = `https://api.github.com/repos/${userName}/${repoName}/hooks`;
-    await axios.post(webHookUrl, webHookBody, {
+    const webHookRes = await axios.post(webHookUrl, webHookBody, {
       headers: this.commonService.header(token),
     });
+    if (webHookRes.status == 422) {
+    }
 
     return {
       mdFiles,
