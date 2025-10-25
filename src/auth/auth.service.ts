@@ -22,8 +22,6 @@ export class AuthService {
   async oauthLogin(dto: OauthLoginDto): Promise<AuthResponseDto> {
     const { email, userName, githubAccessToken } = dto;
 
-    console.log(dto);
-
     const res = await this.userSave(email, userName, githubAccessToken);
     const userId = res.id;
     const githubId = res.githubId;
@@ -36,7 +34,6 @@ export class AuthService {
     };
 
     const token = this.jwtService.sign(payload); // .env에 expires in 들어있음
-    console.log(token);
     return {
       success: true,
       accessToken: token,
