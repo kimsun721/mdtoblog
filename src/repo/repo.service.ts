@@ -113,6 +113,7 @@ export class RepoService {
       });
     } catch (e) {
       if (e.status != 422) {
+        // 422면 이미 레포등록했다가 지웠던지 해서 이미 등록되있는거임
         throw new InternalServerErrorException();
       }
     }
@@ -142,16 +143,22 @@ export class RepoService {
       relations: ['user'],
     });
 
-    if (repo?.user.id !== user.id) {
-      throw new ForbiddenException('권한 부족');
-    } else if (!repo) {
+    if (!repo) {
       throw new NotFoundException('존재하지 않는 레포지토리입니다.');
+    } else if (repo?.user.id !== user.id) {
+      throw new ForbiddenException('권한 부족');
     }
 
     const res = await this.repoRepository.delete({ id: repoId });
-    if (!res) {
+    if (res.affected == 0) {
       throw new InternalServerErrorException('삭제중 서버에서 에러 발생');
     }
+
+    const url = `https://api.github.com/repos/${repo.user.userName}/${repo.repoName}/hooks`;
+    const token = await this.commonService.tokenDecrypt(userId);
+    await axios.get(url, {
+      headers: this.commonService.header(token),
+    });
 
     return {
       success: true,
