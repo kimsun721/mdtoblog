@@ -96,16 +96,6 @@ export class RepoService {
       throw new NotFoundException('조건에 맞는 md파일이 레포에 존재하지 않습니다.');
     }
 
-    const res = await this.repoRepository.save({
-      user,
-      mdFiles,
-      repoName,
-      ignorePath,
-    });
-    if (!res) {
-      throw new BadRequestException();
-    }
-
     const webHookBody: CreateWebHookDto = {
       name: 'web',
       active: true,
@@ -117,10 +107,24 @@ export class RepoService {
       },
     };
     const webHookUrl = `https://api.github.com/repos/${userName}/${repoName}/hooks`;
-    const webHookRes = await axios.post(webHookUrl, webHookBody, {
-      headers: this.commonService.header(token),
+    try {
+      await axios.post(webHookUrl, webHookBody, {
+        headers: this.commonService.header(token),
+      });
+    } catch (e) {
+      if (e.status != 422) {
+        throw new InternalServerErrorException();
+      }
+    }
+
+    const res = await this.repoRepository.save({
+      user,
+      mdFiles,
+      repoName,
+      ignorePath,
     });
-    if (webHookRes.status == 422) {
+    if (!res) {
+      throw new BadRequestException();
     }
 
     return {
@@ -155,7 +159,7 @@ export class RepoService {
   }
 
   async patchRepo(userId: number, repoId: number, dto: PatchRepoDto) {
-    const { ignorePath, branch, refreshIntervalMinutes } = dto;
+    const { ignorePath, branch } = dto;
     const user = await this.commonService.findUserOrFail(userId);
     const repo = await this.repoRepository.findOne({
       where: { id: repoId },

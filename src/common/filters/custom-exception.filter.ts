@@ -52,7 +52,7 @@ export class CustomExceptionFilter implements ExceptionFilter {
         message,
       });
     } else {
-      console.log(exception, 1123123);
+      console.log(exception, 'internal server exception');
       const message = 'INTERNAL_SERVER_ERROR';
       response.status(500).json({
         statusCode: 500,
