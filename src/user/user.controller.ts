@@ -17,7 +17,7 @@ export class UserController {
     return await this.postService.getPosts(dto);
   }
 
-  @Get('profile/:userId')
+  @Get(':userId')
   async getUserProfile(@Param('userId') id: number) {
     return await this.userService.getUserProfile(id);
   }

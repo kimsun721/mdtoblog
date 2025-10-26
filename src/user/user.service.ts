@@ -11,19 +11,28 @@ export class UserService {
   ) {}
 
   async getUserProfile(id: number) {
-    const user = await this.userRepository.findOne({
-      where: { id },
-      relations: ['post', 'comment'],
-      select: {
-        id: true,
-        userName: true,
-        email: true,
-        githubId: true,
-        repo: { repoName: true, mdFiles: true, ignorePath: true },
-        post: { title: true, views: true, likes: true, updatedAt: true },
-        comment: true,
-      },
-    });
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.repo', 'repo')
+      .leftJoinAndSelect('user.post', 'post')
+      .leftJoinAndSelect('user.comment', 'comment')
+      .select([
+        'user.id',
+        'user.userName',
+        'user.email',
+        'user.githubId',
+        'repo.repoName',
+        'repo.mdFiles',
+        'repo.ignorePath',
+        'post.id',
+        'post.title',
+        'post.views',
+        'post.likes',
+        'post.updatedAt',
+        'comment', // 그냥 다 가져옴
+      ])
+      .where('user.id = :id', { id })
+      .getOne();
     if (!user) throw new NotFoundException();
 
     return user;

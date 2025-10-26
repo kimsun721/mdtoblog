@@ -64,6 +64,7 @@ export class AuthController {
       throw new UnauthorizedException('No token');
     }
 
-    return await this.authService.refresh(refreshToken);
+    const res = await this.authService.refresh(refreshToken);
+    return res;
   }
 }
