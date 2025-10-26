@@ -5,7 +5,6 @@ import { CommonService } from 'src/common/common.service';
 import { Post } from 'src/post/post.entity';
 import { Repository } from 'typeorm';
 import { GetPostsDto } from './dto/get-posts.dto';
-import { GetPostDto } from './dto/get-post.dto';
 import { Repo } from 'src/repo/repo.entity';
 
 @Injectable()
@@ -77,17 +76,7 @@ export class PostService {
     };
   }
 
-  async getPosts(dto: GetPostsDto): Promise<Post[]> {
-    const { userId } = dto;
-
-    const user = await this.commonService.findUserOrFail(userId);
-
-    const res = await this.postRepository.find({});
-
-    return res;
-  }
-
-  async getPost(dto: GetPostDto): Promise<Post> {
+  async getPost(dto: GetPostsDto): Promise<Post> {
     const { id } = dto;
 
     const res = await this.postRepository.findOne({

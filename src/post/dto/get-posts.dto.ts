@@ -4,5 +4,5 @@ import { IsNumber } from 'class-validator';
 export class GetPostsDto {
   @IsNumber()
   @Type(() => Number)
-  userId: number;
+  id: number;
 }

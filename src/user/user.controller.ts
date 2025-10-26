@@ -1,9 +1,6 @@
 import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import { GetPostsDto } from 'src/post/dto/get-posts.dto';
 import { PostService } from 'src/post/post.service';
-import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
-import { GetProfileUrlDto } from './dto/get-profile-url.dto';
 
 @Controller('user')
 export class UserController {
@@ -12,9 +9,14 @@ export class UserController {
     private readonly postService: PostService,
   ) {}
 
-  @Get('posts/:userId')
-  async findUserPosts(@Param('userId') dto: GetPostsDto) {
-    return await this.postService.getPosts(dto);
+  @Get(':userId/posts')
+  async findUserPosts(@Param('userId') id: number) {
+    return await this.userService.getUserPosts(id);
+  }
+
+  @Get(':userId/comments')
+  async findUserComments(@Param('userId') id: number) {
+    return await this.userService.getUserComments(id);
   }
 
   @Get(':userId')

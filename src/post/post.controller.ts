@@ -1,8 +1,8 @@
 import { Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { PostService } from './post.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
-import { GetPostDto } from './dto/get-post.dto';
 import { SearchPostDto } from './dto/search-post.dto';
+import { GetPostsDto } from './dto/get-posts.dto';
 
 @Controller('post')
 export class PostController {
@@ -19,7 +19,7 @@ export class PostController {
   }
 
   @Get(':id')
-  async findAll(@Param() dto: GetPostDto) {
+  async findAll(@Param() dto: GetPostsDto) {
     return await this.postService.getPost(dto);
   }
 
