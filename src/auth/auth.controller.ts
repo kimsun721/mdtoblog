@@ -5,6 +5,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Post,
   Req,
   Res,
@@ -51,7 +52,7 @@ export class AuthController {
   //   return await this.authService.loginCheck(req.user.profile.userId);
   // }
 
-  @Get()
+  @Post('refresh')
   async refreshAccess(@Req() req) {
     const cookie: string = req.headers.cookie;
     const refreshToken = cookie
@@ -66,5 +67,13 @@ export class AuthController {
 
     const res = await this.authService.refresh(refreshToken);
     return res;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/logout')
+  @HttpCode(204)
+  async logout(@Req() req) {
+    await this.authService.logout(req.user.profile.userId);
+    return;
   }
 }

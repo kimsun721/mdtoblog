@@ -114,4 +114,8 @@ export class AuthService {
 
     return accessToken;
   }
+
+  async logout(userId: number) {
+    await this.userRepository.update({ id: userId }, { refreshToken: null });
+  }
 }
