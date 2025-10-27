@@ -2,6 +2,7 @@ import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typ
 import { Repo } from '../repo/repo.entity';
 import { Comment } from '../comment/comment.entity';
 import { Post } from '../post/post.entity';
+import { Like } from 'src/like/like.entity';
 
 @Entity()
 export class User {
@@ -9,13 +10,16 @@ export class User {
   id: number;
 
   @OneToMany(() => Repo, (repo) => repo.user)
-  repo: Repo;
+  repo: Repo[];
 
   @OneToMany(() => Post, (post) => post.user)
-  post: Post;
+  post: Post[];
 
   @OneToMany(() => Comment, (comment) => comment.user)
   comment: Comment[];
+
+  @OneToMany(() => Like, (like) => like.user)
+  likes: Like[];
 
   @Column({ nullable: false, unique: true, length: 50 })
   email: string;
