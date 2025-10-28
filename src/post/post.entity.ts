@@ -11,7 +11,7 @@ import {
 import { Comment } from '../comment/comment.entity';
 import { Repo } from 'src/repo/repo.entity';
 import { User } from 'src/user/user.entity';
-import { Like } from 'src/like/like.entity';
+import { PostLike } from 'src/like/post-like.entity';
 
 @Entity()
 export class Post {
@@ -28,6 +28,9 @@ export class Post {
 
   @OneToMany(() => Comment, (comment) => comment.post)
   comment: Comment[];
+
+  @OneToMany(() => PostLike, (post_like) => post_like.post)
+  post_likes: PostLike[];
 
   @Column({ nullable: false, type: 'varchar', length: 100 })
   title: string;

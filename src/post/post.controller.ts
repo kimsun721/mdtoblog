@@ -1,12 +1,26 @@
-import { Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { PostService } from './post.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { SearchPostDto } from './dto/search-post.dto';
 import { GetPostsDto } from './dto/get-posts.dto';
+import { LikeService } from 'src/like/like.service';
 
 @Controller('post')
 export class PostController {
-  constructor(private readonly postService: PostService) {}
+  constructor(
+    private readonly postService: PostService,
+    private readonly likeService: LikeService,
+  ) {}
 
   @Get()
   async get(@Query() q) {
@@ -21,6 +35,14 @@ export class PostController {
   @Get(':id')
   async findAll(@Param() dto: GetPostsDto) {
     return await this.postService.getPost(dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/:id/likes')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async createPostLike(@Req() req, @Param() postId: number) {
+    await this.likeService.createPostLike(req.user.profile.userId, postId);
+    return;
   }
 
   // @UseGuards(JwtAuthGuard)

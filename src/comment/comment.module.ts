@@ -6,10 +6,11 @@ import { Comment } from './comment.entity';
 import { User } from 'src/user/user.entity';
 import { Post } from 'src/post/post.entity';
 import { CommonService } from 'src/common/common.service';
+import { LikeService } from 'src/like/like.service';
 
 @Module({
   controllers: [CommentController],
-  providers: [CommentService, CommonService],
+  providers: [CommentService, CommonService, LikeService],
   imports: [TypeOrmModule.forFeature([Comment, User, Post])],
 })
 export class CommentModule {}

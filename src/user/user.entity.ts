@@ -2,7 +2,8 @@ import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typ
 import { Repo } from '../repo/repo.entity';
 import { Comment } from '../comment/comment.entity';
 import { Post } from '../post/post.entity';
-import { Like } from 'src/like/like.entity';
+import { PostLike } from 'src/like/post-like.entity';
+import { CommentLike } from 'src/like/comment-like.entity';
 
 @Entity()
 export class User {
@@ -18,8 +19,11 @@ export class User {
   @OneToMany(() => Comment, (comment) => comment.user)
   comment: Comment[];
 
-  @OneToMany(() => Like, (like) => like.user)
-  likes: Like[];
+  @OneToMany(() => PostLike, (post_like) => post_like.user)
+  post_likes: PostLike;
+
+  @OneToMany(() => CommentLike, (comment_like) => comment_like.user)
+  comment_likes: CommentLike;
 
   @Column({ nullable: false, unique: true, length: 50 })
   email: string;

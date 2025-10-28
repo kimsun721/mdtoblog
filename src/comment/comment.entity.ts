@@ -5,11 +5,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../user/user.entity';
 import { Post } from '../post/post.entity';
+import { CommentLike } from 'src/like/comment-like.entity';
 
 @Entity()
 export class Comment {
@@ -23,6 +25,9 @@ export class Comment {
   @ManyToOne(() => Post, (post) => post.comment, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'post_id' })
   post: Post;
+
+  @OneToMany(() => CommentLike, (comment_like) => comment_like.comment)
+  comment_likes: CommentLike[];
 
   @Column({ name: 'parent_id', nullable: true, type: 'int' })
   parentId: number;
