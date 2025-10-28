@@ -11,7 +11,7 @@ import {
 import { Comment } from '../comment/comment.entity';
 import { Repo } from 'src/repo/repo.entity';
 import { User } from 'src/user/user.entity';
-import { PostLike } from 'src/like/post-like.entity';
+import { PostLike } from 'src/like/entity/post-like.entity';
 
 @Entity()
 export class Post {

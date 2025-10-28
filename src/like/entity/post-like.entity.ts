@@ -1,4 +1,4 @@
-import { Comment } from 'src/comment/comment.entity';
+import { Post } from 'src/post/post.entity';
 import { User } from 'src/user/user.entity';
 import {
   Entity,
@@ -6,17 +6,19 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  Unique,
 } from 'typeorm';
-@Entity('comment_likes')
-export class CommentLike {
+@Entity('post_likes')
+@Unique(['user', 'post'])
+export class PostLike {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Comment, (comment) => comment.comment_likes)
-  @JoinColumn({ name: 'comment_id' })
-  comment: Comment;
+  @ManyToOne(() => Post, (post) => post.post_likes)
+  @JoinColumn({ name: 'post_id' })
+  post: Post;
 
-  @ManyToOne(() => User, (user) => user.comment_likes)
+  @ManyToOne(() => User, (user) => user.post_likes)
   @JoinColumn({ name: 'user_id' })
   user: User;
 

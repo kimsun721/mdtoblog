@@ -7,10 +7,11 @@ import { User } from 'src/user/user.entity';
 import { Post } from 'src/post/post.entity';
 import { CommonService } from 'src/common/common.service';
 import { LikeService } from 'src/like/like.service';
+import { LikeModule } from 'src/like/like.module';
 
 @Module({
   controllers: [CommentController],
   providers: [CommentService, CommonService, LikeService],
-  imports: [TypeOrmModule.forFeature([Comment, User, Post])],
+  imports: [TypeOrmModule.forFeature([Comment, User, Post]), LikeModule],
 })
 export class CommentModule {}

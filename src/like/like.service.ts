@@ -9,8 +9,8 @@ import { Repository } from 'typeorm';
 import { User } from 'src/user/user.entity';
 import { Post } from 'src/post/post.entity';
 import { Comment } from 'src/comment/comment.entity';
-import { PostLike } from './post-like.entity';
-import { CommentLike } from './comment-like.entity';
+import { PostLike } from './entity/post-like.entity';
+import { CommentLike } from './entity/comment-like.entity';
 
 @Injectable()
 export class LikeService {
@@ -21,8 +21,8 @@ export class LikeService {
     @InjectRepository(CommentLike)
     private readonly commentLikeRepository: Repository<CommentLike>,
 
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectRepository(Comment)
+    private readonly commentRepository: Repository<Comment>,
 
     @InjectRepository(Post)
     private readonly postRepository: Repository<Post>,
@@ -30,14 +30,8 @@ export class LikeService {
 
   async createPostLike(userId: number, postId: number) {
     const post = await this.postRepository.findOne({ where: { id: postId } });
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    const like = await this.postLikeRepository.findOne({
-      where: { post: { id: postId }, user: { id: userId } },
-    });
 
     if (!post) throw new NotFoundException('존재하지 않는 게시글입니다.');
-    if (!user) throw new NotFoundException('존재하지 않는 유저입니다.');
-    if (!like) throw new ConflictException('이미 좋아요가 눌려져있습니다.');
 
     await this.postLikeRepository.save({
       user: { id: userId },
@@ -49,16 +43,42 @@ export class LikeService {
 
   async deletePostLike(userId: number, postId: number) {
     const post = await this.postRepository.findOne({ where: { id: postId } });
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    const like = await this.postLikeRepository.findOne({
-      where: { post: { id: postId }, user: { id: userId } },
+    if (!post) throw new NotFoundException('존재하지 않는 게시글입니다.');
+
+    const res = await this.postLikeRepository.delete({
+      user: { id: userId },
+      post: { id: postId },
+    });
+    if (res.affected == 0) {
+      throw new NotFoundException();
+    }
+    return;
+  }
+
+  async createCommentLike(userId: number, commentId: number) {
+    const comment = await this.commentRepository.findOne({ where: { id: commentId } });
+
+    if (!comment) throw new NotFoundException('존재하지 않는 댓글입니다.');
+
+    await this.commentLikeRepository.save({
+      user: { id: userId },
+      comment: { id: commentId },
     });
 
-    if (!post) throw new NotFoundException('존재하지 않는 게시글입니다.');
-    if (!user) throw new NotFoundException('존재하지 않는 유저입니다.');
-    if (!like) throw new NotFoundException('좋아요가 눌려있지 않은 게시글입니다.');
+    return;
+  }
 
-    await this.postLikeRepository.delete({ id: like.id });
+  async deleteCommentLike(userId: number, commentId: number) {
+    // const comment = await this.commentRepository.findOne({ where: { id: commentId } });
+    // if (!comment) throw new NotFoundException('존재하지 않는 댓글입니다.');
+
+    const res = await this.commentLikeRepository.delete({
+      user: { id: userId },
+      comment: { id: commentId },
+    });
+    if (res.affected == 0) {
+      throw new NotFoundException();
+    }
     return;
   }
 }

@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { User } from '../user/user.entity';
 import { Post } from '../post/post.entity';
-import { CommentLike } from 'src/like/comment-like.entity';
+import { CommentLike } from 'src/like/entity/comment-like.entity';
 
 @Entity()
 export class Comment {
