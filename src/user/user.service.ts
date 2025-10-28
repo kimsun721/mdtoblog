@@ -40,7 +40,6 @@ export class UserService {
       select: {
         id: true,
         title: true,
-        likes: true,
         views: true,
         updatedAt: true,
         createdAt: true,

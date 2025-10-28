@@ -7,11 +7,12 @@ import {
   ManyToOne,
   Unique,
   JoinColumn,
+  Table,
 } from 'typeorm';
 import { LikeEntityType } from './type/like-entity-type';
 import { Post } from 'src/post/post.entity';
 
-@Entity('')
+@Entity('likes')
 export class Like {
   @PrimaryGeneratedColumn()
   id: number;
@@ -28,10 +29,6 @@ export class Like {
   @ManyToOne(() => User, (user) => user.likes)
   @JoinColumn({ name: 'user_id' })
   user: User;
-
-  @ManyToOne(() => Post, (post) => post.likes)
-  @JoinColumn({ name: 'post_id' })
-  post: Post;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -29,9 +29,6 @@ export class Post {
   @OneToMany(() => Comment, (comment) => comment.post)
   comment: Comment[];
 
-  @OneToMany(() => Like, (like) => like.post)
-  likes: Like[];
-
   @Column({ nullable: false, type: 'varchar', length: 100 })
   title: string;
 
