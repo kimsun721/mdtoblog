@@ -15,6 +15,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { SearchPostDto } from './dto/search-post.dto';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { LikeService } from 'src/like/like.service';
+import { GetPostDto } from './dto/get-post.dto';
 
 @Controller('post')
 export class PostController {
@@ -34,8 +35,8 @@ export class PostController {
   }
 
   @Get(':id')
-  async findAll(@Param() dto: GetPostsDto) {
-    return await this.postService.getPost(dto);
+  async getPost(@Param() dto: GetPostDto, @Req() req) {
+    return await this.postService.getPost(dto, req?.user?.profile?.userId);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -6,6 +6,8 @@ import { Post } from 'src/post/post.entity';
 import { Repository } from 'typeorm';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { Repo } from 'src/repo/repo.entity';
+import { PostLike } from 'src/like/entity/post-like.entity';
+import { GetPostDto } from './dto/get-post.dto';
 
 @Injectable()
 export class PostService {
@@ -16,13 +18,19 @@ export class PostService {
     @InjectRepository(Repo)
     private readonly repoRepository: Repository<Repo>,
 
+    @InjectRepository(PostLike)
+    private readonly postLikeRepository: Repository<PostLike>,
+
     private readonly commonService: CommonService,
   ) {}
 
   async getAllPosts(page: number, limit: number) {
+    if (!page) page = 1;
+    if (!limit) limit = 10;
     const res = await this.postRepository
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
+      .loadRelationCountAndMap('post.likeCount', 'post.post_likes')
       .select([
         'post.id',
         'post.title',
@@ -76,29 +84,42 @@ export class PostService {
     };
   }
 
-  async getPost(dto: GetPostsDto): Promise<Post> {
+  async getPost(dto: GetPostDto, userId: number) {
     const { id } = dto;
+    const post = await this.postRepository
+      .createQueryBuilder('post')
+      .where('post.id = :id', { id })
+      .leftJoinAndSelect('post.user', 'user')
+      .leftJoinAndSelect('post.comment', 'comment')
+      .loadRelationCountAndMap('post.likeCount', 'post.post_likes')
+      .select([
+        'post.id',
+        'post.title',
+        'post.updatedAt',
+        'post.content',
+        'post.views',
+        'user.id',
+        'user.userName',
+        'comment.id',
+        'comment.user',
+        'comment.content',
+      ])
+      .getOne();
 
-    const res = await this.postRepository.findOne({
-      where: { id },
-      relations: ['user', 'comment'],
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        updatedAt: true,
-        views: true,
-        user: { id: true, userName: true },
-        comment: { id: true, user: true, content: true },
-      },
-    });
-    if (!res) {
+    if (!post) {
       throw new NotFoundException();
     }
-    const views = res.views + 1;
+    const views = post.views + 1;
     await this.postRepository.update({ id }, { views });
+    let liked = false;
 
-    return res;
+    if (userId) {
+      liked = await this.postLikeRepository.exists({
+        where: { post: { id }, user: { id: userId } },
+      });
+    }
+
+    return { ...post, liked };
   }
 
   async searchPost(keyword: string): Promise<Post[]> {
