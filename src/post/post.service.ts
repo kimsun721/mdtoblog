@@ -92,12 +92,14 @@ export class PostService {
       .leftJoinAndSelect('post.user', 'user')
       .leftJoinAndSelect('post.comment', 'comment')
       .loadRelationCountAndMap('post.likeCount', 'post.post_likes')
+      .addSelect(['user.id'])
       .select([
         'post.id',
         'post.title',
         'post.updatedAt',
         'post.content',
         'post.views',
+        'post.userId',
         'user.id',
         'user.userName',
         'comment.id',
@@ -105,6 +107,8 @@ export class PostService {
         'comment.content',
       ])
       .getOne();
+
+    console.log(post);
 
     if (!post) {
       throw new NotFoundException();
