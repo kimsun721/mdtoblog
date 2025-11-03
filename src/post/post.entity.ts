@@ -26,10 +26,10 @@ export class Post {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column({ name: 'user_id', nullable: false })
+  @Column({ name: 'user_id', nullable: false, unsigned: true })
   userId: number;
 
-  @Column({ name: 'repo_id', nullable: false })
+  @Column({ name: 'repo_id', nullable: false, unsigned: true })
   repoId: number;
 
   @OneToMany(() => Comment, (comment) => comment.post)

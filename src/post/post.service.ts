@@ -66,7 +66,7 @@ export class PostService {
         const sha = res.data.sha;
         const postExist = await this.postRepository.findOneBy({ sha });
 
-        if (!postExist && content) {
+        if (!postExist && content && content.length >= 100) {
           await this.postRepository.save({
             user,
             repo,
@@ -78,6 +78,8 @@ export class PostService {
         }
       }),
     );
+
+    console.log(posts);
 
     return {
       success: true,
@@ -107,8 +109,6 @@ export class PostService {
         'comment.content',
       ])
       .getOne();
-
-    console.log(post);
 
     if (!post) {
       throw new NotFoundException();

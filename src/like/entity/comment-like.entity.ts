@@ -14,11 +14,11 @@ export class CommentLike {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Comment, (comment) => comment.comment_likes)
+  @ManyToOne(() => Comment, (comment) => comment.comment_likes, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'comment_id' })
   comment: Comment;
 
-  @ManyToOne(() => User, (user) => user.comment_likes)
+  @ManyToOne(() => User, (user) => user.comment_likes, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 

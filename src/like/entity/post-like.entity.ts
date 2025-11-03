@@ -14,11 +14,11 @@ export class PostLike {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Post, (post) => post.post_likes)
+  @ManyToOne(() => Post, (post) => post.post_likes, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'post_id' })
   post: Post;
 
-  @ManyToOne(() => User, (user) => user.post_likes)
+  @ManyToOne(() => User, (user) => user.post_likes, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
