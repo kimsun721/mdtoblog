@@ -1,12 +1,14 @@
-import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { PostService } from 'src/post/post.service';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { RepoService } from 'src/repo/repo.service';
 
 @Controller('user')
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly postService: PostService,
+    private readonly repoService: RepoService,
   ) {}
 
   @Get(':userId/posts')
@@ -19,8 +21,14 @@ export class UserController {
     return await this.userService.getUserComments(id);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('repos')
+  async getUserRepos(@Req() req) {
+    return await this.repoService.getUserRepo(req.user.profile.userId);
+  }
+
   @Get(':userId')
-  async getUserProfile(@Param('userId') id: number) {
+  async getUserProfile(@Param('userId', ParseIntPipe) id: number) {
     return await this.userService.getUserProfile(id);
   }
 

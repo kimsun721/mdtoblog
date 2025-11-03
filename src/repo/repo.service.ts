@@ -211,13 +211,16 @@ export class RepoService {
     };
   }
 
-  async handleRepoUpdate(repoName: string, pushed_at: Date) {
+  async handleRepoUpdate(repoName: string, pushed_at: Date, userId?: number) {
     const repo = await this.repoRepository.findOne({
       where: { repoName },
       relations: ['user'],
     });
     if (!repo) {
       throw new NotFoundException('존재하지않는 레포입니다.');
+    }
+    if (userId && userId != repo.user.id) {
+      throw new ForbiddenException();
     }
 
     const token = await this.commonService.tokenDecrypt(repo.user.id);
@@ -262,5 +265,11 @@ export class RepoService {
     );
 
     return await this.postService.syncPosts(repo.user.id, pushed_at);
+  }
+
+  async getUserRepo(userId: number) {
+    const repos = await this.repoRepository.find({ where: { user: { id: userId } } });
+
+    return repos;
   }
 }

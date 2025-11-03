@@ -6,9 +6,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Post } from 'src/post/post.entity';
 import { Comment } from 'src/comment/comment.entity';
+import { RepoModule } from 'src/repo/repo.module';
+import { Repo } from 'src/repo/repo.entity';
 
 @Module({
-  imports: [PostModule, TypeOrmModule.forFeature([User, Post, Comment])],
+  imports: [RepoModule, TypeOrmModule.forFeature([User, Post, Comment])],
   controllers: [UserController],
   providers: [UserService],
 })

@@ -15,6 +15,7 @@ import { CreateRepoDto } from 'src/repo/dto/create-repo.dto';
 import { DeleteRepoDto } from './dto/delete-repo.dto';
 import { plainToInstance } from 'class-transformer';
 import { PatchRepoDto } from './dto/patch-repo.dto';
+import { SyncRepoDto } from './dto/sync-repo.dto';
 
 @Controller('repo')
 export class RepoController {
@@ -51,7 +52,7 @@ export class RepoController {
     @Param('repoId') repoId: number,
     @Body() dto: PatchRepoDto,
   ) {
-    return await this.repoService.patchRepo(req.user.profile.id, repoId, dto);
+    return await this.repoService.patchRepo(req.user.profile.userId, repoId, dto);
   }
 
   // 깃허브 웹훅 연동 api
@@ -60,6 +61,16 @@ export class RepoController {
     return await this.repoService.handleRepoUpdate(
       req.body.repository.name,
       req.body.repository.pushed_at,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('sync')
+  async syncRepo(@Req() req, @Body() dto: SyncRepoDto) {
+    await this.repoService.handleRepoUpdate(
+      dto.repoName,
+      new Date(),
+      req.user.profile.userId,
     );
   }
 }

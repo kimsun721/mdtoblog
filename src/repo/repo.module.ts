@@ -11,5 +11,6 @@ import { PostModule } from 'src/post/post.module';
   imports: [TypeOrmModule.forFeature([User, Repo]), CommonModule, PostModule],
   controllers: [RepoController],
   providers: [RepoService],
+  exports: [RepoService],
 })
 export class RepoModule {}
