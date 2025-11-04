@@ -11,7 +11,7 @@ export class OauthLoginDto {
   userName: string;
 
   @ApiProperty({
-    example: 'gh-qd1k2d0k1da',
+    example: '',
     description: '깃허브 api access token',
   })
   @IsString()

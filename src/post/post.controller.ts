@@ -40,16 +40,16 @@ export class PostController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Post('/:id/likes')
-  @HttpCode(HttpStatus.CREATED)
   async createPostLike(@Req() req, @Param('id') id: number) {
     await this.likeService.createPostLike(req.user.profile.userId, id);
     return;
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete('/:id/likes')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete('/:id/likes')
   async deletePostLike(@Param('id') likeId: number, @Req() req) {
     await this.likeService.deletePostLike(req.user.profile.userId, likeId);
     return;

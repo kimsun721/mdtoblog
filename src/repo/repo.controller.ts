@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -35,17 +37,21 @@ export class RepoController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':repoId')
-  async deleteRepo(@Req() req, @Param('repoId') repoId: number): Promise<{}> {
+  async deleteRepo(@Req() req, @Param('repoId') repoId: number) {
     const dto = plainToInstance(DeleteRepoDto, {
       userId: req.user.profile.userId,
       repoId,
     });
 
-    return await this.repoService.deleteRepo(dto);
+    await this.repoService.deleteRepo(dto);
+
+    return;
   }
 
   @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
   @Patch(':repoId')
   async patchRepo(
     @Req() req,

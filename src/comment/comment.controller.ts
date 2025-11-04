@@ -38,6 +38,7 @@ export class CommentController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
   @Patch(':id')
   async updateComment(
     @Req() req,
@@ -48,24 +49,25 @@ export class CommentController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete(':id')
   async deleteComment(@Param('id') id: number, @Req() req) {
     return await this.commentService.deleteComment(req.user.profile.userId, id);
   }
 
   @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Post('/:id/likes')
-  @HttpCode(HttpStatus.CREATED)
   async createCommentLike(@Req() req, @Param('id') commentId: number) {
     await this.likeService.createCommentLike(req.user.profile.userId, commentId);
     return;
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete('/:id/likes')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete('/:id/likes')
   async deleteCommentLike(@Param('id') id: number, @Req() req) {
-    return await this.likeService.deleteCommentLike(req.user.profile.userId, id);
+    await this.likeService.deleteCommentLike(req.user.profile.userId, id);
+    return;
   }
 }

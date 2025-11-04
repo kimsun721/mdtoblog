@@ -6,6 +6,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpStatus,
   Post,
   Req,
   Res,
@@ -34,7 +35,6 @@ export class AuthController {
   })
   async githubRedirect(@Req() req, @Res({ passthrough: true }) res: Response) {
     const dto = plainToInstance(OauthLoginDto, req.user);
-
     const result = await this.authService.oauthLogin(dto);
 
     res.cookie('refreshToken', result.refreshToken, {
@@ -45,12 +45,6 @@ export class AuthController {
 
     res.redirect('http://localhost:5173/');
   }
-
-  // @UseGuards(JwtAuthGuard)
-  // @Get()
-  // async checkAccess(@Req() req) {
-  //   return await this.authService.loginCheck(req.user.profile.userId);
-  // }
 
   @Post('refresh')
   async refreshAccess(@Req() req) {
@@ -71,7 +65,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('/logout')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async logout(@Req() req) {
     await this.authService.logout(req.user.profile.userId);
     return;
