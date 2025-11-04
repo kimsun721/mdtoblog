@@ -86,8 +86,11 @@ export class PostService {
       .filter((p) => !posts.includes(p.id))
       .map((p) => p.id);
 
-    const res = await this.postRepository.delete(deletedPostsIds);
-    console.log(res);
+    if (deletedPostsIds.length != 0) {
+      const res = await this.postRepository.delete(deletedPostsIds);
+
+      console.log(res);
+    }
 
     return {
       success: true,
