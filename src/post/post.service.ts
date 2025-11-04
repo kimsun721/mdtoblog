@@ -50,6 +50,7 @@ export class PostService {
   async syncPosts(userId: number, pushed_at: Date) {
     const user = await this.commonService.findUserOrFail(userId);
     const repo = await this.repoRepository.findOneOrFail({ where: { user } });
+    const oldPosts = await this.postRepository.find({ where: { user: { id: userId } } });
     const token = await this.commonService.tokenDecrypt(userId);
     const userName = user.userName;
     const repoName = repo.repoName;
@@ -66,8 +67,8 @@ export class PostService {
         const sha = res.data.sha;
         const postExist = await this.postRepository.findOneBy({ sha });
 
-        if (!postExist && content && content.length >= 100) {
-          await this.postRepository.save({
+        if (!postExist && content) {
+          const post = await this.postRepository.save({
             user,
             repo,
             title: res.data.name,
@@ -75,11 +76,18 @@ export class PostService {
             content,
             sha,
           });
+          return post.id;
         }
+        return postExist?.id;
       }),
     );
 
-    console.log(posts);
+    const deletedPostsIds = oldPosts
+      .filter((p) => !posts.includes(p.id))
+      .map((p) => p.id);
+
+    const res = await this.postRepository.delete(deletedPostsIds);
+    console.log(res);
 
     return {
       success: true,

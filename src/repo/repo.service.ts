@@ -202,6 +202,8 @@ export class RepoService {
     //   updateData.branch = branch;
     // }
 
+    const result = await this.postService.syncPosts(userId, new Date());
+
     const res = await this.repoRepository.update({ id: repoId }, updateData);
     if (!res) throw new InternalServerErrorException('업데이트 중 에러 발생');
 
@@ -211,6 +213,7 @@ export class RepoService {
     };
   }
 
+  // TODO : ignorePath 수정해도 post에 반영이 안되는 문제 해결
   async handleRepoUpdate(repoName: string, pushed_at: Date, userId?: number) {
     const repo = await this.repoRepository.findOne({
       where: { repoName },
