@@ -12,8 +12,9 @@ import { User } from 'src/user/user.entity';
 import { Post } from 'src/post/post.entity';
 import { plainToInstance } from 'class-transformer';
 import { GetCommentsResponseDto } from './dto/get-comments.dto';
-import { UpdateCommentDto, UpdateCommentResponseDto } from './dto/update-comment.dto';
 import { CommonService } from 'src/common/common.service';
+import { UpdateCommentResponseDto } from './dto/update-comment-response.dto';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 
 @Injectable()
 export class CommentService {
@@ -26,8 +27,6 @@ export class CommentService {
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-
-    private readonly commonService: CommonService,
   ) {}
   async getComments(id: number): Promise<GetCommentsResponseDto[]> {
     const comments = await this.commentRepository.find({

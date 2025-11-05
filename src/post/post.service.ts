@@ -7,7 +7,6 @@ import { Repository } from 'typeorm';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { Repo } from 'src/repo/repo.entity';
 import { PostLike } from 'src/like/entity/post-like.entity';
-import { GetPostDto } from './dto/get-post.dto';
 
 @Injectable()
 export class PostService {
@@ -82,9 +81,7 @@ export class PostService {
       }),
     );
 
-    const deletedPostsIds = oldPosts
-      .filter((p) => !posts.includes(p.id))
-      .map((p) => p.id);
+    const deletedPostsIds = oldPosts.filter((p) => !posts.includes(p.id)).map((p) => p.id);
 
     if (deletedPostsIds.length != 0) {
       const res = await this.postRepository.delete(deletedPostsIds);
@@ -97,11 +94,11 @@ export class PostService {
     };
   }
 
-  async getPost(dto: GetPostDto, userId: number) {
-    const { id } = dto;
+  async getPost(postId: number, userId: number | null) {
+    console.log(userId);
     const post = await this.postRepository
       .createQueryBuilder('post')
-      .where('post.id = :id', { id })
+      .where('post.id = :id', { id: postId })
       .leftJoinAndSelect('post.user', 'user')
       .leftJoinAndSelect('post.comment', 'comment')
       .loadRelationCountAndMap('post.likeCount', 'post.post_likes')
@@ -125,26 +122,27 @@ export class PostService {
       throw new NotFoundException();
     }
     const views = post.views + 1;
-    await this.postRepository.update({ id }, { views });
+    await this.postRepository.update({ id: postId }, { views });
     let liked = false;
 
     if (userId) {
       liked = await this.postLikeRepository.exists({
-        where: { post: { id }, user: { id: userId } },
+        where: { post: { id: postId }, user: { id: userId } },
       });
+      console.log(liked);
     }
 
     return { ...post, liked };
   }
+  // TODO : 저거 현재 liked불러오기 제대로 작동안함 고치기
 
   async searchPost(keyword: string): Promise<Post[]> {
     const res = await this.postRepository
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
-      .where(
-        'MATCH(post.title, post.content) AGAINST(:keyword IN NATURAL LANGUAGE MODE)',
-        { keyword },
-      )
+      .where('MATCH(post.title, post.content) AGAINST(:keyword IN NATURAL LANGUAGE MODE)', {
+        keyword,
+      })
       .getMany();
 
     return res;

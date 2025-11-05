@@ -1,12 +1,4 @@
 import { Expose, Type } from 'class-transformer';
-import { IsDate, IsJSON, IsNotEmpty, IsNumber, IsString } from 'class-validator';
-
-export class GetCommentsDto {
-  @IsNumber()
-  @Type(() => Number)
-  @IsNotEmpty()
-  id: number;
-}
 
 class UserDto {
   @Expose()
