@@ -3,10 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { CommonService } from 'src/common/common.service';
 import { Post } from 'src/post/post.entity';
-import { Repository } from 'typeorm';
-import { GetPostsDto } from './dto/get-posts.dto';
+import { In, Repository } from 'typeorm';
 import { Repo } from 'src/repo/repo.entity';
 import { PostLike } from 'src/like/entity/post-like.entity';
+import { CommentLike } from 'src/like/entity/comment-like.entity';
 
 @Injectable()
 export class PostService {
@@ -19,6 +19,9 @@ export class PostService {
 
     @InjectRepository(PostLike)
     private readonly postLikeRepository: Repository<PostLike>,
+
+    @InjectRepository(CommentLike)
+    private readonly commentLikeRepository: Repository<CommentLike>,
 
     private readonly commonService: CommonService,
   ) {}
@@ -111,7 +114,9 @@ export class PostService {
         'post.userId',
         'user.id',
         'user.userName',
+        'user.githubId',
         'comment.id',
+        'comment.parentId',
         'comment.user',
         'comment.content',
       ])
@@ -122,15 +127,40 @@ export class PostService {
     }
     const views = post.views + 1;
     await this.postRepository.update({ id: postId }, { views });
-    let liked = false;
+
+    let postLike;
+    let commentLikeMap = {};
+    let commentLikeCount = {};
+
+    const commentIds = post.comment.map((c) => c.id);
 
     if (userId) {
-      liked = await this.postLikeRepository.exists({
+      postLike = await this.postLikeRepository.findOne({
         where: { post: { id: postId }, user: { id: userId } },
+        select: { id: true },
+      });
+
+      const commentLikes = await this.commentLikeRepository.find({
+        where: { user: { id: userId }, comment: { id: In(commentIds) } },
+        relations: ['comment'],
+        select: { id: true, comment: { id: true } },
+      });
+      commentLikes.forEach((cl) => {
+        commentLikeMap[cl.comment.id] = cl.id;
+
+        if (!commentLikeCount[cl.comment.id]) commentLikeCount[cl.comment.id] = 0;
+        commentLikeCount[cl.comment.id]++;
       });
     }
 
-    return { ...post, liked };
+    post.comment = post.comment.map((c) => ({
+      ...c,
+      likeId: commentLikeMap[c.id] || null,
+      liked: !!commentLikeMap[c.id],
+      likeCount: commentLikeCount[c.id] || 0,
+    }));
+
+    return { ...post, liked: !!postLike, likeId: postLike.id ?? null };
   }
   // TODO : 저거 현재 liked불러오기 제대로 작동안함 고치기
 

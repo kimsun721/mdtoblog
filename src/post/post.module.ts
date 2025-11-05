@@ -7,9 +7,10 @@ import { Post } from 'src/post/post.entity';
 import { Repo } from 'src/repo/repo.entity';
 import { User } from 'src/user/user.entity';
 import { LikeModule } from 'src/like/like.module';
+import { CommentLike } from 'src/like/entity/comment-like.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Post, Repo, User]), CommonModule, LikeModule],
+  imports: [TypeOrmModule.forFeature([Post, Repo, User, CommentLike]), CommonModule, LikeModule],
   controllers: [PostController],
   providers: [PostService],
   exports: [PostService],
