@@ -13,6 +13,8 @@ import {
 import { PostService } from './post.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { LikeService } from 'src/like/like.service';
+import { UserId } from 'src/common/decorators/user-id.decorator';
+import { JwtOptionalGuard } from 'src/auth/guards/jwt-optional.guard';
 
 @Controller('post')
 export class PostController {
@@ -31,10 +33,10 @@ export class PostController {
     return await this.postService.searchPost(keyword);
   }
 
+  @UseGuards(JwtOptionalGuard)
   @Get(':postId')
-  async getPost(@Param('postId') postId: number, @Req() req) {
-    console.log(req.user);
-    return await this.postService.getPost(postId, req?.user?.profile?.userId);
+  async getPost(@Param('postId') postId: number, @UserId() userId: number | null) {
+    return await this.postService.getPost(postId, userId);
   }
 
   @UseGuards(JwtAuthGuard)

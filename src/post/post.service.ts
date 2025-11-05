@@ -95,7 +95,6 @@ export class PostService {
   }
 
   async getPost(postId: number, userId: number | null) {
-    console.log(userId);
     const post = await this.postRepository
       .createQueryBuilder('post')
       .where('post.id = :id', { id: postId })
@@ -129,7 +128,6 @@ export class PostService {
       liked = await this.postLikeRepository.exists({
         where: { post: { id: postId }, user: { id: userId } },
       });
-      console.log(liked);
     }
 
     return { ...post, liked };
