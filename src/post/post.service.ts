@@ -160,7 +160,7 @@ export class PostService {
       likeCount: commentLikeCount[c.id] || 0,
     }));
 
-    return { ...post, liked: !!postLike, likeId: postLike.id ?? null };
+    return { ...post, liked: !!postLike, likeId: postLike?.id ?? null };
   }
   // TODO : 저거 현재 liked불러오기 제대로 작동안함 고치기
 

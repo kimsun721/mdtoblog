@@ -41,13 +41,11 @@ export class LikeService {
     return;
   }
 
-  async deletePostLike(userId: number, postId: number) {
-    const post = await this.postRepository.findOne({ where: { id: postId } });
-    if (!post) throw new NotFoundException('존재하지 않는 게시글입니다.');
-
+  async deletePostLike(userId: number, likeId: number) {
+    console.log(userId, likeId);
     const res = await this.postLikeRepository.delete({
+      id: likeId,
       user: { id: userId },
-      post: { id: postId },
     });
     if (res.affected == 0) {
       throw new NotFoundException();
