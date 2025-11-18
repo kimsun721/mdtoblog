@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { PostService } from 'src/post/post.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { RepoService } from 'src/repo/repo.service';
+import { UserId } from 'src/common/decorators/user-id.decorator';
 
 @Controller('user')
 export class UserController {
@@ -23,8 +24,8 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Get('repos')
-  async getUserRepos(@Req() req) {
-    return await this.repoService.getUserRepo(req.user.profile.userId);
+  async getUserRepos(@UserId() userId: number) {
+    return await this.repoService.getUserRepo(userId);
   }
 
   @Get(':userId')

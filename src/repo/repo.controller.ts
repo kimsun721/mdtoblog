@@ -18,6 +18,7 @@ import { DeleteRepoDto } from './dto/delete-repo.dto';
 import { plainToInstance } from 'class-transformer';
 import { PatchRepoDto } from './dto/patch-repo.dto';
 import { SyncRepoDto } from './dto/sync-repo.dto';
+import { UserId } from 'src/common/decorators/user-id.decorator';
 
 @Controller('repo')
 export class RepoController {
@@ -25,23 +26,22 @@ export class RepoController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async getRepo(@Req() req): Promise<string[]> {
-    return await this.repoService.fetchGithubRepos(req.user.profile.userId);
+  async getRepo(@UserId() userId: number): Promise<string[]> {
+    return await this.repoService.fetchGithubRepos(userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async createRepo(@Req() req, @Body() dto: CreateRepoDto): Promise<{}> {
-    const { userId, userName } = req.user.profile;
-    return await this.repoService.createRepo(userId, userName, dto);
+  async createRepo(@UserId() userId: number, @Body() dto: CreateRepoDto): Promise<{}> {
+    return await this.repoService.createRepo(userId, dto);
   }
 
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':repoId')
-  async deleteRepo(@Req() req, @Param('repoId') repoId: number) {
+  async deleteRepo(@UserId() userId: number, @Param('repoId') repoId: number) {
     const dto = plainToInstance(DeleteRepoDto, {
-      userId: req.user.profile.userId,
+      userId,
       repoId,
     });
 
@@ -54,11 +54,11 @@ export class RepoController {
   @HttpCode(HttpStatus.OK)
   @Patch(':repoId')
   async patchRepo(
-    @Req() req,
+    @UserId() userId: number,
     @Param('repoId') repoId: number,
     @Body() dto: PatchRepoDto,
   ) {
-    return await this.repoService.patchRepo(req.user.profile.userId, repoId, dto);
+    return await this.repoService.patchRepo(userId, repoId, dto);
   }
 
   // 깃허브 웹훅 연동 api
@@ -72,11 +72,7 @@ export class RepoController {
 
   @UseGuards(JwtAuthGuard)
   @Post('sync')
-  async syncRepo(@Req() req, @Body() dto: SyncRepoDto) {
-    await this.repoService.handleRepoUpdate(
-      dto.repoName,
-      new Date(),
-      req.user.profile.userId,
-    );
+  async syncRepo(@UserId() userId: number, @Body() dto: SyncRepoDto) {
+    await this.repoService.handleRepoUpdate(dto.repoName, new Date(), userId);
   }
 }

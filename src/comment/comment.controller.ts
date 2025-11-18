@@ -17,6 +17,7 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { LikeService } from 'src/like/like.service';
+import { UserId } from 'src/common/decorators/user-id.decorator';
 
 @Controller('comment')
 export class CommentController {
@@ -32,42 +33,41 @@ export class CommentController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async createComment(@Req() req, @Body() dto: CreateCommentDto) {
-    console.log(req.user.profile.id, req.user.profile.userId);
-    return await this.commentService.createComment(dto, req.user.profile.id);
+  async createComment(@UserId() userId: number, @Body() dto: CreateCommentDto) {
+    return await this.commentService.createComment(dto, userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Patch(':commentId')
   async updateComment(
-    @Req() req,
+    @UserId() userId: number,
     @Param('commentId') commentId: number,
     @Body() dto: UpdateCommentDto,
   ) {
-    return await this.commentService.updateComment(req.user.profile.userId, commentId, dto);
+    return await this.commentService.updateComment(userId, commentId, dto);
   }
 
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':commentId')
-  async deleteComment(@Param('commentId') commentId: number, @Req() req) {
-    return await this.commentService.deleteComment(req.user.profile.userId, commentId);
+  async deleteComment(@Param('commentId') commentId: number, @UserId() userId: number) {
+    return await this.commentService.deleteComment(userId, commentId);
   }
 
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('/:commentId/likes')
-  async createCommentLike(@Req() req, @Param('commentId') commentId: number) {
-    await this.likeService.createCommentLike(req.user.profile.userId, commentId);
+  async createCommentLike(@UserId() userId: number, @Param('commentId') commentId: number) {
+    await this.likeService.createCommentLike(userId, commentId);
     return;
   }
 
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete('/:likeId/likes')
-  async deleteCommentLike(@Param('likeId') likeId: number, @Req() req) {
-    await this.likeService.deleteCommentLike(req.user.profile.userId, likeId);
+  async deleteCommentLike(@Param('likeId') likeId: number, @UserId() userId: number) {
+    await this.likeService.deleteCommentLike(userId, likeId);
     return;
   }
 }

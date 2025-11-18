@@ -42,7 +42,6 @@ export class LikeService {
   }
 
   async deletePostLike(userId: number, likeId: number) {
-    console.log(userId, likeId);
     const res = await this.postLikeRepository.delete({
       id: likeId,
       user: { id: userId },
@@ -66,13 +65,13 @@ export class LikeService {
     return;
   }
 
-  async deleteCommentLike(userId: number, commentId: number) {
+  async deleteCommentLike(userId: number, commentLikeId: number) {
     // const comment = await this.commentRepository.findOne({ where: { id: commentId } });
     // if (!comment) throw new NotFoundException('존재하지 않는 댓글입니다.');
 
     const res = await this.commentLikeRepository.delete({
       user: { id: userId },
-      comment: { id: commentId },
+      id: commentLikeId,
     });
     if (res.affected == 0) {
       throw new NotFoundException();

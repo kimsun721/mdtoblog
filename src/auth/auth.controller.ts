@@ -18,6 +18,7 @@ import { OauthLoginDto } from './dto/login.dto';
 import { plainToInstance } from 'class-transformer';
 import { Response } from 'express';
 import { JwtAuthGuard } from './guards/jwt.guard';
+import { UserId } from 'src/common/decorators/user-id.decorator';
 
 @ApiTags('auth')
 @Controller('auth')

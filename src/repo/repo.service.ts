@@ -42,7 +42,6 @@ export class RepoService {
 
   async createRepo(
     userId: number,
-    userName: string,
     dto: CreateRepoDto,
   ): Promise<{ mdFiles: string[]; success: boolean }> {
     const { repoName, ignorePath } = dto;
@@ -50,6 +49,7 @@ export class RepoService {
     const token = await this.commonService.tokenDecrypt(userId);
     const user = await this.commonService.findUserOrFail(userId);
     const repos: string[] = await this.fetchGithubRepos(userId);
+    const userName = user.userName;
 
     if (!repos.includes(repoName)) {
       throw new BadRequestException();

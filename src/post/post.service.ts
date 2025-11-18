@@ -11,6 +11,7 @@ import { CommentLike } from 'src/like/entity/comment-like.entity';
 @Injectable()
 export class PostService {
   constructor(
+    // TODO : 저거 현재 liked불러오기 제대로 작동안함 고치기
     @InjectRepository(Post)
     private readonly postRepository: Repository<Post>,
 
@@ -88,8 +89,6 @@ export class PostService {
 
     if (deletedPostsIds.length != 0) {
       const res = await this.postRepository.delete(deletedPostsIds);
-
-      console.log(res);
     }
 
     return {
@@ -162,7 +161,6 @@ export class PostService {
 
     return { ...post, liked: !!postLike, likeId: postLike?.id ?? null };
   }
-  // TODO : 저거 현재 liked불러오기 제대로 작동안함 고치기
 
   async searchPost(keyword: string): Promise<Post[]> {
     const res = await this.postRepository
