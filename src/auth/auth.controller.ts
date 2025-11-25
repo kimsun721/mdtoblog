@@ -43,6 +43,8 @@ export class AuthController {
       secure: true,
       sameSite: 'none',
       maxAge: 1000 * 60 * 60 * 24 * 30,
+      domain: 'mdtoblog.vercel.app',
+      path: '/',
     });
 
     res.redirect(front);
@@ -56,8 +58,6 @@ export class AuthController {
       .map((v) => v.trim())
       .find((v) => v.startsWith('refreshToken='))
       ?.split('=')[1];
-
-    console.log(cookie);
 
     if (!refreshToken) {
       throw new UnauthorizedException('No token');
