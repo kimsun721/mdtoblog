@@ -1,10 +1,5 @@
 import { DataSource } from 'typeorm';
-import * as dotenv from 'dotenv';
-import path from 'path';
-
-dotenv.config();
-
-const __dirname = path.resolve(); // 루트 기준으로 잡음
+import 'dotenv/config';
 
 export const AppDataSource = new DataSource({
   type: 'mysql',
@@ -13,8 +8,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: [path.join(__dirname, '/**/*.entity.{js,ts}')],
-  migrations: [path.join(__dirname, '/migrations/*{.ts,.js}')],
+  entities: ['src/**/*.entity.{ts,js}'],
+  migrations: ['src/migrations/*.ts'],
   synchronize: false,
 });
-  
