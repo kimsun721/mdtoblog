@@ -23,7 +23,10 @@ import { UserId } from 'src/common/decorators/user-id.decorator';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @UseGuards(AuthGuard('github'))
   @Get('github')
@@ -41,7 +44,8 @@ export class AuthController {
       sameSite: 'lax',
     });
 
-    res.redirect('http://localhost:5173/');
+    const front = this.configService.get('FRONT_URL');
+    res.redirect(`${front}`);
   }
 
   @Post('refresh')

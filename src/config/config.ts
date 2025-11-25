@@ -10,4 +10,5 @@ export default () => ({
   GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
   GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
   CRYPTO_SECRET: process.env.CRYPTO_SECRET,
+  FRONT_URL: process.env.FRONT_URL,
 });
