@@ -18,7 +18,6 @@ import { OauthLoginDto } from './dto/login.dto';
 import { plainToInstance } from 'class-transformer';
 import { Response } from 'express';
 import { JwtAuthGuard } from './guards/jwt.guard';
-import { UserId } from 'src/common/decorators/user-id.decorator';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -38,14 +37,15 @@ export class AuthController {
     const dto = plainToInstance(OauthLoginDto, req.user);
     const result = await this.authService.oauthLogin(dto);
 
+    const front = this.configService.get('FRONT_URL');
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none',
+      maxAge: 1000 * 60 * 60 * 24 * 30,
     });
 
-    const front = this.configService.get('FRONT_URL');
-    res.redirect(`${front}`);
+    res.redirect(front);
   }
 
   @Post('refresh')
