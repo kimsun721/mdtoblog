@@ -40,7 +40,4 @@ export class Comment {
 
   @UpdateDateColumn({ name: 'updated_at', nullable: false, type: 'datetime' })
   updatedAt: Date;
-
-  @DeleteDateColumn()
-  deletedAt?: Date;
 }

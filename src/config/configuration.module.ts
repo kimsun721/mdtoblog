@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
       envFilePath: process.env.NODE_ENV === 'production' ? undefined : '.env',
       isGlobal: true,
       load: [config],
+      ignoreEnvFile: true,
     }),
   ],
 })

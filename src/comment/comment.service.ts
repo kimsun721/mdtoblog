@@ -110,7 +110,8 @@ export class CommentService {
     } else if (comment.user.id != userId) {
       throw new ForbiddenException();
     }
-    await this.commentRepository.softDelete(comment.id);
+    await this.commentRepository.delete(comment.id);
+    await this.commentRepository.delete({ parentId: comment.id });
 
     return;
   }
