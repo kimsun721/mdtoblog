@@ -26,7 +26,7 @@ import { LikeModule } from './like/like.module';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
         entities: [__dirname + '/**/*.entity.{js,ts}'],
-        synchronize: true, // 배 포 할 때 끄 시 오 데 스 네
+        synchronize: false, // 배 포 할 때 끄 시 오 데 스 네
       }),
       inject: [ConfigService],
     }),

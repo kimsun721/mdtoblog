@@ -13,4 +13,3 @@ import { ConfigModule } from '@nestjs/config';
   ],
 })
 export class ConfigurationModule {}
-export { ConfigModule };
