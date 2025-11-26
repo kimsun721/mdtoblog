@@ -37,16 +37,16 @@ export class AuthController {
     const dto = plainToInstance(OauthLoginDto, req.user);
     const result = await this.authService.oauthLogin(dto);
 
-    const front = this.configService.get('FRONT_URL');
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
       maxAge: 1000 * 60 * 60 * 24 * 30,
-      domain: 'mdtoblog.vercel.app',
       path: '/',
+      partitioned: true,
     });
 
+    const front = this.configService.get('FRONT_URL');
     res.redirect(front);
   }
 
