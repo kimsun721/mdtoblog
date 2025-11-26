@@ -20,10 +20,11 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  console.log(process.env.FRONT_URL);
   app.enableCors({
     origin: `${process.env.FRONT_URL}`,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   const swaggerConfig = new DocumentBuilder()
