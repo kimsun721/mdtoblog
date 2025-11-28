@@ -117,6 +117,7 @@ export class PostService {
         'user.githubId',
         'comment.id',
         'comment.parentId',
+        'comment.createdAt',
         'commentUser.id',
         'commentUser.userName',
         'commentUser.githubId',
