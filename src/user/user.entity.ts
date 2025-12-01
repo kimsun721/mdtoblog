@@ -4,6 +4,7 @@ import { Comment } from '../comment/comment.entity';
 import { Post } from '../post/post.entity';
 import { PostLike } from 'src/like/entity/post-like.entity';
 import { CommentLike } from 'src/like/entity/comment-like.entity';
+import { RefreshToken } from 'src/auth/entity/refresh-token.entity';
 
 @Entity()
 export class User {
@@ -25,14 +26,14 @@ export class User {
   @OneToMany(() => CommentLike, (comment_like) => comment_like.user)
   comment_likes: CommentLike[];
 
+  @OneToMany(() => RefreshToken, (refresh_token) => refresh_token.user)
+  refresh_tokens: RefreshToken[];
+
   @Column({ nullable: false, unique: true, length: 50 })
   email: string;
 
   @Column({ name: 'user_name', nullable: false, unique: true, length: 500 })
   userName: string;
-
-  @Column({ name: 'refresh_token', nullable: true, type: 'varchar' })
-  refreshToken: string | null;
 
   @Column({ name: 'github_id', nullable: false })
   githubId: number;

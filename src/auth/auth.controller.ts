@@ -37,17 +37,18 @@ export class AuthController {
     const dto = plainToInstance(OauthLoginDto, req.user);
     const result = await this.authService.oauthLogin(dto);
 
-    res.cookie('refreshToken', result.refreshToken, {
+    res.cookie('refreshToken', result.uuid, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
       maxAge: 1000 * 60 * 60 * 24 * 30,
       path: '/',
-      partitioned: true,
     });
 
     const front = this.configService.get('FRONT_URL');
     res.redirect(front);
+
+    return { uuid: result.uuid };
   }
 
   @Post('refresh')

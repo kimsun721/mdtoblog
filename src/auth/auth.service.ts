@@ -8,12 +8,15 @@ import { AuthResponseDto } from 'src/auth/dto/auth-response.dto';
 import { ConfigService } from '@nestjs/config';
 import { OauthLoginDto } from './dto/login.dto';
 import axios from 'axios';
+import { RefreshToken } from './entity/refresh-token.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(RefreshToken)
+    private readonly refreshTokenRepository: Repository<RefreshToken>,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
   ) {}
@@ -26,7 +29,7 @@ export class AuthService {
     return {
       success: true,
       accessToken: res.accessToken,
-      refreshToken: res.refreshToken,
+      uuid: res.uuid,
     };
   }
 
@@ -34,6 +37,8 @@ export class AuthService {
     const user = await this.userRepository.findOneBy({ email });
     const secretKey = await this.configService.get<string>('CRYPTO_SECRET');
     const encryptedToken = CryptoJS.AES.encrypt(githubAccessToken, secretKey).toString();
+    const uuid = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30);
 
     if (user) {
       const payload = {
@@ -42,14 +47,19 @@ export class AuthService {
         userName,
         githubId: user?.githubId,
       };
-      const refreshToken = this.jwtService.sign(payload, { expiresIn: '30d' });
       const accessToken = this.jwtService.sign(payload, { expiresIn: '10m' });
 
-      await this.userRepository.update(
-        { id: user.id },
-        { githubAccessToken: encryptedToken, refreshToken },
+      await this.userRepository.update({ id: user.id }, { githubAccessToken: encryptedToken });
+
+      const refreshToken = await this.refreshTokenRepository.update(
+        { user },
+        {
+          uuid,
+          expiresAt: new Date(),
+        },
       );
-      return { accessToken, refreshToken };
+
+      return { accessToken, uuid };
     }
 
     const url = `https://api.github.com/users/${userName}`;
@@ -68,11 +78,14 @@ export class AuthService {
       userName,
       githubId: res.data.id,
     };
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '30d' });
     const accessToken = this.jwtService.sign(payload, { expiresIn: '10m' });
-    await this.userRepository.update({ id: result.id }, { refreshToken });
+    const refreshToken = await this.refreshTokenRepository.save({
+      user: result,
+      uuid,
+      expiresAt,
+    });
 
-    return { accessToken, refreshToken };
+    return { accessToken, uuid };
   }
 
   // async loginCheck(dto: loginCheckDto) {
@@ -89,25 +102,26 @@ export class AuthService {
   //   return githubId;
   // }
 
-  async refresh(refreshToken: string) {
-    const user = await this.userRepository.findOne({ where: { refreshToken } });
-    if (!user) {
-      throw new UnauthorizedException('Invalid token');
+  async refresh(uuid: string) {
+    const refreshToken = await this.refreshTokenRepository.findOne({
+      where: { uuid },
+      relations: ['user'],
+    });
+    if (!refreshToken) {
+      throw new UnauthorizedException('Invalid uuid');
     }
 
-    const r = await this.jwtService.decode(refreshToken);
-    const expiredDate = new Date(r.exp * 1000);
-    if (new Date() > expiredDate) {
-      await this.userRepository.update({ id: user.id }, { refreshToken: null });
+    if (new Date() > refreshToken.expiresAt) {
+      await this.refreshTokenRepository.delete({ uuid });
 
       throw new UnauthorizedException('Invaild token');
     }
 
     const payload = {
-      userId: user.id,
-      email: user.email,
-      userName: user.userName,
-      githubId: user.githubId,
+      userId: refreshToken.user.id,
+      email: refreshToken.user.email,
+      userName: refreshToken.user.userName,
+      githubId: refreshToken.user.githubId,
     };
     const accessToken = this.jwtService.sign(payload, { expiresIn: '10m' });
 
@@ -115,6 +129,6 @@ export class AuthService {
   }
 
   async logout(userId: number) {
-    await this.userRepository.update({ id: userId }, { refreshToken: null });
+    await this.refreshTokenRepository.delete({ user: { id: userId } });
   }
 }

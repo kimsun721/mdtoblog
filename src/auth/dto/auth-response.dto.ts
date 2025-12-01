@@ -10,7 +10,7 @@ export class AuthResponseDto {
   @IsString()
   accessToken: string;
 
-  @ApiProperty({ example: 'gh-qd1k2d0k1da', description: 'refresh token' })
+  @ApiProperty({ example: 'f9b321dc-6d1a-43e1-bf83-88cdc76aab2b', description: 'uuid' })
   @IsString()
-  refreshToken: string;
+  uuid: string;
 }

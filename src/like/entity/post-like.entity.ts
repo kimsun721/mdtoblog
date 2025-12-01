@@ -8,6 +8,7 @@ import {
   JoinColumn,
   Unique,
 } from 'typeorm';
+
 @Entity('post_likes')
 @Unique(['user', 'post'])
 export class PostLike {
