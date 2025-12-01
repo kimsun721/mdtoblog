@@ -59,8 +59,6 @@ export class AuthController {
       .find((v) => v.startsWith('refreshToken='))
       ?.split('=')[1];
 
-    console.log(refreshToken, 'tlqkflqkf  ');
-
     if (!refreshToken) {
       throw new UnauthorizedException('No token');
     }

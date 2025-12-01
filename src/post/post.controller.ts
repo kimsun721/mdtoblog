@@ -36,6 +36,7 @@ export class PostController {
   @UseGuards(JwtOptionalGuard)
   @Get(':postId')
   async getPost(@Param('postId') postId: number, @UserId() userId: number | null) {
+    console.log(userId);
     return await this.postService.getPost(postId, userId);
   }
 

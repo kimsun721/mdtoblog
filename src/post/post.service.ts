@@ -146,6 +146,9 @@ export class PostService {
         select: { id: true },
       });
 
+      console.log('userId : ' + userId);
+      console.log('postLike : ' + postLike);
+
       const commentLikes = await this.commentLikeRepository.find({
         where: { user: { id: userId }, comment: { id: In(commentIds) } },
         relations: ['comment'],

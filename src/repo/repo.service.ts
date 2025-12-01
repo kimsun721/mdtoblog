@@ -17,6 +17,7 @@ import { PostService } from 'src/post/post.service';
 import { Post } from 'src/post/post.entity';
 import { PatchRepoDto } from './dto/patch-repo.dto';
 import { CreateWebHookDto } from './dto/set-webhook.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RepoService {
@@ -26,6 +27,7 @@ export class RepoService {
 
     private readonly commonService: CommonService,
     private readonly postService: PostService,
+    private readonly configService: ConfigService,
   ) {}
 
   async fetchGithubRepos(userId: number): Promise<string[]> {
@@ -98,7 +100,7 @@ export class RepoService {
       active: true,
       events: ['push'],
       config: {
-        url: 'https://8917817da5ce.ngrok-free.app/api/repo/webhook', // 나중에 배포하면 백엔드 URL 넣기
+        url: `${this.configService.get('BACKEND_URL')}/api/repo/webhook`,
         content_type: 'json',
         insecure_ssl: '0',
       },
