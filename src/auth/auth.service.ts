@@ -75,20 +75,6 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  // async loginCheck(dto: loginCheckDto) {
-  //   const { userId } = dto;
-  //   const githubId = await this.userRepository.findOne({
-  //     where: { id: userId },
-  //     select: ['githubId'],
-  //   });
-
-  //   if (!githubId) {
-  //     throw new UnauthorizedException();
-  //   }
-
-  //   return githubId;
-  // }
-
   async refresh(refreshToken: string) {
     const user = await this.userRepository.findOne({ where: { refreshToken } });
     if (!user) {

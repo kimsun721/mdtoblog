@@ -37,16 +37,16 @@ export class AuthController {
     const dto = plainToInstance(OauthLoginDto, req.user);
     const result = await this.authService.oauthLogin(dto);
 
-    const front = this.configService.get('FRONT_URL');
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
+      // domain: '.cloudtype.app',
       maxAge: 1000 * 60 * 60 * 24 * 30,
-      domain: 'mdtoblog.vercel.app',
       path: '/',
     });
 
+    const front = this.configService.get('FRONT_URL');
     res.redirect(front);
   }
 
@@ -58,6 +58,8 @@ export class AuthController {
       .map((v) => v.trim())
       .find((v) => v.startsWith('refreshToken='))
       ?.split('=')[1];
+
+    console.log(refreshToken, 'tlqkflqkf  ');
 
     if (!refreshToken) {
       throw new UnauthorizedException('No token');

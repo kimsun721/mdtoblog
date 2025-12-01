@@ -129,7 +129,10 @@ export class PostService {
       throw new NotFoundException();
     }
     const views = post.views + 1;
-    await this.postRepository.update({ id: postId }, { views });
+    await this.postRepository.query(
+      'UPDATE post SET views = ?,updated_at = updated_at WHERE id = ?',
+      [views, postId],
+    );
 
     let postLike;
     let commentLikeMap = {};

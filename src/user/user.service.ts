@@ -35,16 +35,12 @@ export class UserService {
   }
 
   async getUserPosts(userId: number): Promise<Post[]> {
-    const posts = await this.postRepository.find({
-      where: { user: { id: userId } },
-      select: {
-        id: true,
-        title: true,
-        views: true,
-        updatedAt: true,
-        createdAt: true,
-      },
-    });
+    const posts = await this.postRepository
+      .createQueryBuilder('post')
+      .where('post.user_id = :userId', { userId })
+      .loadRelationCountAndMap('post.likeCount', 'post.post_likes')
+      .select(['post.id', 'post.title', 'post.views', 'post.updatedAt', 'post.createdAt'])
+      .getMany();
 
     return posts;
   }
