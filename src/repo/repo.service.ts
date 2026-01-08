@@ -161,7 +161,7 @@ export class RepoService {
         headers: this.commonService.header(token),
       });
       hookId = hooks.data.find(
-        (v) => v.config.url === 'https://8917817da5ce.ngrok-free.app/api/repo/webhook',
+        (v) => v.config.url === `${this.configService.getOrThrow('BACKEND_URL')}/api/repo/webhook`,
       )?.id;
     } catch (e) {
       console.log(e);
