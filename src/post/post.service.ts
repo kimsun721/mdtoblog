@@ -104,6 +104,7 @@ export class PostService {
       .leftJoinAndSelect('post.user', 'user')
       .leftJoinAndSelect('post.comment', 'comment')
       .leftJoinAndSelect('comment.user', 'commentUser')
+      .leftJoin('comment.parent', 'parentComment')
       .loadRelationCountAndMap('post.likeCount', 'post.post_likes')
       .addSelect(['user.id'])
       .select([
@@ -117,7 +118,7 @@ export class PostService {
         'user.userName',
         'user.githubId',
         'comment.id',
-        'comment.parentId',
+        'parentComment.id',
         'comment.createdAt',
         'commentUser.id',
         'commentUser.userName',

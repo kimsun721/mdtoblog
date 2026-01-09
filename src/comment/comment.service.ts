@@ -12,7 +12,6 @@ import { User } from 'src/user/user.entity';
 import { Post } from 'src/post/post.entity';
 import { plainToInstance } from 'class-transformer';
 import { GetCommentsResponseDto } from './dto/get-comments.dto';
-import { CommonService } from 'src/common/common.service';
 import { UpdateCommentResponseDto } from './dto/update-comment-response.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 
@@ -63,7 +62,7 @@ export class CommentService {
 
     return await this.commentRepository.save({
       post: { id: post.id },
-      parentId,
+      parent: { id: parentId },
       content,
       user: { id: user.id },
     });
