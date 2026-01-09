@@ -34,6 +34,7 @@ export class PostService {
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
       .loadRelationCountAndMap('post.likeCount', 'post.post_likes')
+      .loadRelationCountAndMap('post.commentCount', 'post.comment')
       .select([
         'post.id',
         'post.title',
