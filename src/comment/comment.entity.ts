@@ -29,8 +29,12 @@ export class Comment {
   @OneToMany(() => CommentLike, (comment_like) => comment_like.comment)
   comment_likes: CommentLike[];
 
-  @Column({ name: 'parent_id', nullable: true, type: 'int' })
-  parentId: number;
+  @ManyToOne(() => Comment, { onDelete: 'CASCADE', nullable: true })
+  @JoinColumn({ name: 'parent_id' })
+  parent: Comment;
+
+  @OneToMany(() => Comment, (comment) => comment.parent)
+  children: Comment[];
 
   @Column({ nullable: false, type: 'text' })
   content: string;

@@ -111,7 +111,6 @@ export class CommentService {
       throw new ForbiddenException();
     }
     await this.commentRepository.delete(comment.id);
-    await this.commentRepository.delete({ parentId: comment.id });
 
     return;
   }
