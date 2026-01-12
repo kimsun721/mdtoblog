@@ -70,12 +70,13 @@ export class PostService {
         const content = Buffer.from(res.data.content, 'base64').toString('utf-8');
         const sha = res.data.sha;
         const postExist = await this.postRepository.findOneBy({ sha });
+        const title = res.data.name.replace(/\.md$/, '');
 
         if (!postExist && content) {
           const post = await this.postRepository.save({
             user,
             repo,
-            title: res.data.name,
+            title,
             updated_at: pushed_at,
             content,
             sha,
