@@ -1,98 +1,119 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# GitHub-Driven Blog API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+GitHub 저장소의 마크다운 파일을 자동으로 블로그 포스트로 동기화하는 NestJS 기반 블로그 백엔드입니다.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 개요
 
-## Description
+별도의 에디터 없이, GitHub 저장소에 `.md` 파일을 push하면 블로그 포스트로 자동 동기화됩니다. GitHub OAuth로 로그인하고, 연동할 레포지토리를 등록하면 끝입니다. Webhook을 통해 push 이벤트가 발생할 때마다 포스트가 자동으로 갱신됩니다.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 핵심 기능
 
-## Project setup
+- **GitHub 마크다운 자동 동기화** — 레포지토리 등록 후 push 시 Webhook으로 포스트 자동 업데이트
+- **무시 경로 설정** — 특정 디렉토리/파일을 동기화 대상에서 제외 가능
+- **SHA 기반 변경 감지** — GitHub commit SHA로 변경된 파일만 선택적으로 갱신
+- **댓글 스레드** — 부모-자식 관계의 대댓글 지원
+- **좋아요** — 포스트 및 댓글에 개별 좋아요 (유저당 1개 유니크 제약)
+- **전문 검색** — MySQL FULLTEXT 인덱스 기반 포스트 검색
+- **조회수 트래킹** — 포스트 조회 시 자동 카운트 증가
 
-```bash
-$ npm install
+## 기술 스택
+
+| 분류 | 기술 |
+|------|------|
+| Framework | NestJS 11, TypeScript 5.7 |
+| Database | MySQL 8, TypeORM 0.3 |
+| Auth | GitHub OAuth2, Passport.js, JWT (Access/Refresh Token) |
+| Security | AES 암호화 (crypto-js), HTTP-only Cookie |
+| API | GitHub REST API v3 (Axios) |
+| Docs | Swagger / OpenAPI |
+
+## 아키텍처
+
+```
+src/
+├── auth/        # GitHub OAuth2, JWT 전략, 토큰 발급/갱신
+├── user/        # 사용자 프로필, 레포/포스트/댓글 관계
+├── repo/        # GitHub 레포 연동, Webhook 수신, 마크다운 동기화
+├── post/        # 포스트 CRUD, 전문 검색, 조회수, 좋아요
+├── comment/     # 스레드 댓글, CRUD, 좋아요
+├── like/        # PostLike / CommentLike 엔티티
+├── common/      # 공통 Guard, Decorator, Filter, Interceptor
+└── database/    # TypeORM 마이그레이션
 ```
 
-## Compile and run the project
+## 인증 흐름
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```
+클라이언트 → GET /api/auth/github
+    → GitHub OAuth 동의 화면
+    → Callback: /api/auth/github/redirect
+    → JWT Access Token (10분) + Refresh Token (30일, HTTP-only Cookie) 발급
 ```
 
-## Run tests
+- GitHub Access Token은 AES로 암호화 후 DB 저장
+- Refresh Token은 HTTP-only Cookie에 저장 (XSS 방어)
+- `POST /api/auth/refresh` 로 Access Token 재발급
 
-```bash
-# unit tests
-$ npm run test
+## GitHub 동기화 흐름
 
-# e2e tests
-$ npm run test:e2e
+```
+레포 등록 (POST /api/repo)
+    → GitHub API로 .md 파일 목록 수집
+    → 포스트 최초 생성
 
-# test coverage
-$ npm run test:cov
+이후 push 이벤트
+    → GitHub Webhook → POST /api/repo/webhook
+    → 변경된 .md 파일만 SHA 비교 후 업데이트
 ```
 
-## Deployment
+## 주요 API
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+**인증 불필요**
+```
+GET  /api/post              포스트 목록 (페이지네이션)
+GET  /api/post/search       전문 검색 (?keyword=)
+GET  /api/post/:id          포스트 상세
+GET  /api/comment/:postId   댓글 목록
+GET  /api/user/:userId      유저 프로필
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+**JWT 필요**
+```
+POST   /api/repo            레포지토리 연동
+PATCH  /api/repo/:id        무시 경로 등록 등 설정 변경
+POST   /api/repo/sync       수동 동기화
+POST   /api/comment         댓글 작성
+PATCH  /api/comment/:id     댓글 수정 (본인만)
+DELETE /api/comment/:id     댓글 삭제 (본인만)
+POST   /api/post/:id/likes  포스트 좋아요
+POST   /api/comment/:id/likes  댓글 좋아요
+```
 
-## Resources
+## 데이터 모델
 
-Check out a few resources that may come in handy when working with NestJS:
+```
+User ─┬─< Repo ─< Post ─< Comment ─< CommentLike
+      ├─< Post
+      ├─< Comment
+      ├─< PostLike
+      └─< CommentLike
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Comment (self-referential: parentId → Comment.id)
+```
 
-## Support
+## 환경변수
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```env
+DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME
 
-## Stay in touch
+JWT_SECRET
+JWT_REFRESH_SECRET
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+GITHUB_CLIENT_ID
+GITHUB_CLIENT_SECRET
+GITHUB_CALLBACK_URL
 
-## License
+CRYPTO_SECRET          # GitHub Access Token 암호화 키
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+FRONTEND_URL           # CORS 허용 오리진
+```
