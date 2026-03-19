@@ -27,10 +27,18 @@ export class PostService {
     private readonly commonService: CommonService,
   ) {}
 
-  async getAllPosts(page: number, limit: number) {
+  async getPosts(page: number, limit: number, sort?: string) {
     if (!page) page = 1;
     if (!limit) limit = 10;
-    const res = await this.postRepository
+
+    const orderMap: Record<string, { column: string; order: 'ASC' | 'DESC' }> = {
+      views: { column: 'post.views', order: 'DESC' },
+      created_at: { column: 'post.createdAt', order: 'DESC' },
+      likes: { column: 'likeCount', order: 'DESC' },
+    };
+    const { column, order } = orderMap[sort ?? ''] ?? { column: 'post.updatedAt', order: 'ASC' as const };
+
+    const qb = this.postRepository
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
       .loadRelationCountAndMap('post.likeCount', 'post.post_likes')
@@ -44,12 +52,19 @@ export class PostService {
         'user.userName',
         'user.githubId',
       ])
-      .orderBy('post.updatedAt', 'ASC')
       .take(limit)
-      .skip((page - 1) * limit)
-      .getMany();
+      .skip((page - 1) * limit);
 
-    return res;
+    if (sort === 'likes') {
+      qb.leftJoin('post.post_likes', 'post_like')
+        .addSelect('COUNT(post_like.id)', 'likeCount')
+        .groupBy('post.id')
+        .orderBy('likeCount', 'DESC');
+    } else {
+      qb.orderBy(column, order);
+    }
+
+    return await qb.getMany();
   }
   async syncPosts(userId: number, pushed_at: Date) {
     const user = await this.commonService.findUserOrFail(userId);

@@ -25,7 +25,7 @@ export class PostController {
 
   @Get()
   async get(@Query() q) {
-    return await this.postService.getAllPosts(q.page, q.limit);
+    return await this.postService.getPosts(q.page, q.limit, q.sort);
   }
 
   @Get('search')
