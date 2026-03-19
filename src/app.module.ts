@@ -11,6 +11,7 @@ import { CommonModule } from './common/common.module';
 import { CommentModule } from './comment/comment.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { LikeModule } from './like/like.module';
+import { StatsModule } from './stats/stats.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { LikeModule } from './like/like.module';
     CommonModule,
     CommentModule,
     LikeModule,
+    StatsModule,
   ],
   controllers: [],
   providers: [
