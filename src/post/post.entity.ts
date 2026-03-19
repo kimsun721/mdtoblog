@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -14,6 +15,7 @@ import { User } from 'src/user/user.entity';
 import { PostLike } from 'src/like/entity/post-like.entity';
 
 @Entity()
+@Index(["title","post"],{fulltext:true})
 export class Post {
   @PrimaryGeneratedColumn({ name: 'id', unsigned: true })
   id: number;
