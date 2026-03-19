@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { PostService } from 'src/post/post.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
@@ -11,6 +11,11 @@ export class UserController {
     private readonly userService: UserService,
     private readonly repoService: RepoService,
   ) {}
+
+  @Get('top')
+  async getTopUsers(@Query('limit') limit: number) {
+    return await this.userService.getTopUsers(limit);
+  }
 
   @Get(':userId/posts')
   async findUserPosts(@Param('userId') id: number) {

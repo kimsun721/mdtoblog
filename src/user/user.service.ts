@@ -45,6 +45,24 @@ export class UserService {
     return posts;
   }
 
+  async getTopUsers(limit: number) {
+    const users = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoin('user.posts', 'post')
+      .select([
+        'user.id AS id',
+        'user.userName AS userName',
+        'user.githubId AS githubId',
+        'COUNT(post.id) AS postCount',
+      ])
+      .groupBy('user.id')
+      .orderBy('postCount', 'DESC')
+      .limit(limit || 4)
+      .getRawMany<{ id: number; userName: string; githubId: number; postCount: string }>();
+
+    return { data: users.map((u) => ({ ...u, postCount: Number(u.postCount) })) };
+  }
+
   async getUserComments(userId: number): Promise<Comment[]> {
     const comments = await this.commentRepository.find({
       where: { user: { id: userId } },
