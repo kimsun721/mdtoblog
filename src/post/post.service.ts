@@ -46,7 +46,9 @@ export class PostService {
       .select([
         'post.id',
         'post.title',
+        'post.createdAt',
         'post.updatedAt',
+        'post.views',
         'post.content',
         'user.id',
         'user.userName',
