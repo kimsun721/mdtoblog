@@ -40,33 +40,44 @@ export class PostService {
 
     const qb = this.postRepository
       .createQueryBuilder('post')
-      .leftJoinAndSelect('post.user', 'user')
-      .loadRelationCountAndMap('post.likeCount', 'post.post_likes')
-      .loadRelationCountAndMap('post.commentCount', 'post.comment')
+      .leftJoin('post.user', 'user')
+      .leftJoin('post.post_likes', 'post_like')
+      .leftJoin('post.comment', 'comment')
       .select([
-        'post.id',
-        'post.title',
-        'post.createdAt',
-        'post.updatedAt',
-        'post.views',
-        'post.content',
-        'user.id',
-        'user.userName',
-        'user.githubId',
+        'post.id AS id',
+        'post.title AS title',
+        'post.createdAt AS createdAt',
+        'post.updatedAt AS updatedAt',
+        'post.views AS views',
+        'post.content AS content',
+        'user.id AS userId',
+        'user.userName AS userName',
+        'user.githubId AS githubId',
+        'COUNT(DISTINCT post_like.id) AS likeCount',
+        'COUNT(DISTINCT comment.id) AS commentCount',
       ])
-      .take(limit)
-      .skip((page - 1) * limit);
+      .groupBy('post.id')
+      .limit(limit)
+      .offset((page - 1) * limit);
 
     if (sort === 'likes') {
-      qb.leftJoin('post.post_likes', 'post_like')
-        .addSelect('COUNT(post_like.id)', 'likeCount')
-        .groupBy('post.id')
-        .orderBy('likeCount', 'DESC');
+      qb.orderBy('likeCount', 'DESC');
     } else {
       qb.orderBy(column, order);
     }
 
-    return await qb.getMany();
+    const raw = await qb.getRawMany();
+    return raw.map((r) => ({
+      id: r.id,
+      title: r.title,
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt,
+      views: r.views,
+      content: r.content,
+      user: { id: r.userId, userName: r.userName, githubId: r.githubId },
+      likeCount: Number(r.likeCount),
+      commentCount: Number(r.commentCount),
+    }));
   }
   async syncPosts(userId: number, pushed_at: Date) {
     const user = await this.commonService.findUserOrFail(userId);
