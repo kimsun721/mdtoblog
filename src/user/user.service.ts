@@ -48,7 +48,7 @@ export class UserService {
   async getTopUsers(limit: number) {
     const users = await this.userRepository
       .createQueryBuilder('user')
-      .leftJoin('user.posts', 'post')
+      .leftJoin('user.post', 'post')
       .select([
         'user.id AS id',
         'user.userName AS userName',
